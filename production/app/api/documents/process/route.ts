@@ -60,6 +60,18 @@ const extractionSchema={
   required:["clauses","definitions","obligations","missing_information"]
 } as const;
 
+function classifyAIError(error:unknown){
+  const e=error as {status?:number;code?:string;error?:{code?:string}};
+  const code=e?.code||e?.error?.code||"";
+  if(e?.status===429||code==="insufficient_quota"){
+    return {http:503,code:"AI_QUOTA_EXHAUSTED",message:"AI service temporarily unavailable. Retry after the AI provider is restored."};
+  }
+  if((e?.status&&e.status>=500)||e?.status===408){
+    return {http:503,code:"AI_PROVIDER_UNAVAILABLE",message:"AI service temporarily unavailable. Please retry shortly."};
+  }
+  return {http:502,code:"AI_PROCESSING_FAILED",message:"Contract processing failed safely. The original file is preserved; review the status and retry."};
+}
+
 export async function POST(request:Request){
   if(!process.env.OPENAI_API_KEY)return NextResponse.json({error:"OpenAI is not configured."},{status:503});
   const supabase=await createClient();
@@ -106,6 +118,7 @@ export async function POST(request:Request){
   const model=process.env.OPENAI_MODEL||"gpt-6.1-sol";
   const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
 
+  let aiRunPersisted=false;
   try{
     const response=await client.responses.create({
       model,
@@ -136,6 +149,7 @@ export async function POST(request:Request){
       input_tokens:response.usage?.input_tokens??null,output_tokens:response.usage?.output_tokens??null,created_by:userId
     }).select("id").single();
     if(runError||!run)throw new Error("Could not persist AI provenance.");
+    aiRunPersisted=true;
 
     const {data:output,error:outputError}=await supabase.from("ai_outputs").insert({
       organization_id:doc.organization_id,ai_run_id:run.id,output_type:"contract_structure",
@@ -223,9 +237,27 @@ export async function POST(request:Request){
     });
   }catch(error){
     console.error("contract-processing",error);
+    const classified=classifyAIError(error);
+    if(!aiRunPersisted){
+      await supabase.from("ai_runs").insert({
+        organization_id:doc.organization_id,
+        project_id:doc.project_id,
+        provider:"openai",
+        model,
+        task_type:"contract_extraction",
+        status:"failed",
+        prompt_version:"contract-structure-v1",
+        created_by:userId
+      });
+    }
     await supabase.from("document_versions").update({
-      processing_status:"failed",processing_error:error instanceof Error?error.message.slice(0,500):"Processing failed."
+      processing_status:"failed",
+      processing_error:classified.message
     }).eq("id",versionId);
-    return NextResponse.json({error:"Contract processing failed safely. The original file is preserved; retry after reviewing the error."},{status:502});
+    return NextResponse.json({
+      error:classified.message,
+      code:classified.code,
+      retryable:true
+    },{status:classified.http});
   }
 }

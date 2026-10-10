@@ -10,6 +10,8 @@ export function TeamClient({orgId,currentUserId,role,members:initial,invitations
  async function invite(e:FormEvent<HTMLFormElement>){
   e.preventDefault();setMessage("");setLink("");
   const f=new FormData(e.currentTarget),email=String(f.get("email")||"").trim().toLowerCase(),inviteRole=String(f.get("role")||"contributor"),jobTitle=String(f.get("jobTitle")||"").trim();
+  if(members.some(m=>String(m.email||"").toLowerCase()===email)){setMessage("This person is already a member of the organization.");return}
+  if(invites.some(i=>i.status==="Pending"&&i.email.toLowerCase()===email)){setMessage("A pending invitation already exists for this email.");return}
   const supabase=createClient(); if(!supabase){setMessage("Service unavailable.");return}
   const {data,error}=await supabase.from("team_invitations").insert({organization_id:orgId,email,role:inviteRole,job_title:jobTitle||null,invited_by:currentUserId}).select("id,email,role,job_title,status,expires_at,created_at,token").single();
   if(error){setMessage(error.message);return}

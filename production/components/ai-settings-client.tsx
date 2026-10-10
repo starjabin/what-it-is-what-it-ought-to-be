@@ -1,6 +1,6 @@
 "use client";
 
-import {FormEvent,useMemo,useState} from "react";
+import {FormEvent,useEffect,useMemo,useState} from "react";
 import {createClient} from "@/lib/supabase/client";
 
 type Settings={
@@ -27,17 +27,29 @@ export function AISettingsClient({orgId,role,initial,monthlyRuns}:{orgId:string;
   const [tab,setTab]=useState<Tab>("models");
   const [message,setMessage]=useState("");
   const [busy,setBusy]=useState(false);
+  const [health,setHealth]=useState<"checking"|"healthy"|"unavailable">("checking");
   const canEdit=["owner","admin"].includes(role);
 
   const cap=settings?.monthly_cap_usd??null;
   const runPct=cap?Math.min(100,Math.max(6,Math.round((monthlyRuns/Math.max(cap,1))*100))):18;
   const status=useMemo(()=>({
     provider:"OpenAI",
-    connected:true,
     citations:settings?.require_source_citations!==false,
     externalApproval:settings?.external_actions_require_approval!==false,
     financialApproval:settings?.financial_actions_require_approval!==false
   }),[settings]);
+
+  async function checkHealth(){
+    setHealth("checking");
+    try{
+      const response=await fetch("/api/ai/health",{cache:"no-store"});
+      setHealth(response.ok?"healthy":"unavailable");
+    }catch{
+      setHealth("unavailable");
+    }
+  }
+
+  useEffect(()=>{void checkHealth()},[]);
 
   async function save(e:FormEvent<HTMLFormElement>){
     e.preventDefault();
@@ -76,9 +88,9 @@ export function AISettingsClient({orgId,role,initial,monthlyRuns}:{orgId:string;
         <div className="aiStudioGlyph">AI</div>
         <div><span>ContractGap</span><b>AI Studio</b></div>
       </div>
-      <div className="aiStudioStatus">
+      <div className={"aiStudioStatus "+(health==="healthy"?"":"degraded")}>
         <span className="aiStudioPulse"/>
-        <span>{status.provider} connected</span>
+        <span>{health==="checking"?"Checking OpenAI…":health==="healthy"?"OpenAI healthy":"OpenAI unavailable"}</span>
       </div>
       <div className="aiStudioTopActions">
         <span className="aiRolePill">{role.replaceAll("_"," ")}</span>
@@ -97,7 +109,7 @@ export function AISettingsClient({orgId,role,initial,monthlyRuns}:{orgId:string;
         <div className="aiStudioRailDivider"/>
         <div className="aiStudioMiniStat"><span>AI runs this month</span><b>{monthlyRuns}</b></div>
         <div className="aiStudioMiniStat"><span>Citations</span><b>{status.citations?"Required":"Off"}</b></div>
-        <div className="aiStudioMiniStat"><span>Credentials</span><b>Server vault</b></div>
+        <div className="aiStudioMiniStat"><span>Credentials</span><b>Server vault</b></div><div className="aiStudioMiniStat"><span>Provider health</span><b>{health==="healthy"?"Healthy":health==="checking"?"Checking":"Unavailable"}</b></div>
       </aside>
 
       <main className="aiStudioCanvas">
@@ -111,7 +123,7 @@ export function AISettingsClient({orgId,role,initial,monthlyRuns}:{orgId:string;
         </section>
 
         {tab==="models"&&<section className="aiStudioPanel">
-          <div className="aiPanelHead"><div><span>01</span><h2>Models & provider</h2></div><span className="aiConnectedBadge"><i/> Live server gateway</span></div>
+          <div className="aiPanelHead"><div><span>01</span><h2>Models & provider</h2></div><button type="button" className={"aiConnectedBadge "+(health==="healthy"?"":"locked")} onClick={()=>void checkHealth()}><i/> {health==="healthy"?"Connection healthy":"Test connection"}</button></div>
           <div className="aiProviderCard">
             <div className="aiProviderBrand"><div className="aiProviderLogo">O</div><div><b>OpenAI</b><span>Primary AI provider</span></div></div>
             <div className="aiProviderMeta"><span>API key</span><b>Stored server-side</b></div>

@@ -43,6 +43,6 @@ Never claim you can see a visitor's account, uploaded documents, tenant data, bi
     return NextResponse.json({answer:response.output_text,model:response.model});
   }catch(error){
     console.error("customer-assistant",error);
-    return NextResponse.json({error:"The customer assistant is temporarily unavailable."},{status:502});
+    return NextResponse.json({error:"The customer assistant is temporarily unavailable.",code:"AI_UNAVAILABLE",retryable:true},{status:503});
   }
 }

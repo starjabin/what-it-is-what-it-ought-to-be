@@ -57,7 +57,16 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
    if(!res.ok)throw new Error(data.error||"Processing failed.");
    setMessage("Extraction complete: "+data.counts.clauses+" clauses, "+data.counts.definitions+" definitions and "+data.counts.obligations+" obligations. Review them before Gap analysis.");
    const s=createClient();if(s){const {data:v}=await s.from("document_versions").select("*").eq("document_id",doc.id).order("version_no",{ascending:false});if(v)setVersions(v as Version[])}
-  }catch(error){setMessage(error instanceof Error?error.message:"Processing failed.")}
+  }catch(error){
+    setMessage(error instanceof Error?error.message:"AI service temporarily unavailable. Please retry.");
+    const s=createClient();
+    if(s){
+      const {data:v}=await s.from("document_versions").select("*").eq("document_id",doc.id).order("version_no",{ascending:false});
+      if(v)setVersions(v as Version[]);
+      const {data:d}=await s.from("documents").select("id,project_id,contract_id,file_name,document_type,storage_path,content_hash,version_no,current_version_id,processing_status,created_at").eq("id",doc.id).single();
+      if(d)setDocs(x=>[d as Doc,...x.filter(item=>item.id!==doc.id)]);
+    }
+  }
   finally{setBusy(false)}
  }
  async function openVersion(v:Version){const s=createClient();if(!s)return;const {data,error}=await s.storage.from("contract-evidence").createSignedUrl(v.storage_path,120);if(error){setMessage(error.message);return}window.open(data.signedUrl,"_blank","noopener,noreferrer")}
@@ -74,7 +83,7 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
   </section>
   <aside className="stack"><section className="card"><div className="cardHead"><h2>Upload / new revision</h2></div><div className="cardBody"><form onSubmit={upload}>
    <label htmlFor="doc-revision">Revision of</label><select id="doc-revision" name="revisionOf" defaultValue=""><option value="">New logical document</option>{docs.map(d=><option key={d.id} value={d.id}>{d.file_name}</option>)}</select>
-   <label htmlFor="doc-file">File</label><input id="doc-file" name="file" type="file" required/>
+   <label htmlFor="doc-file">File</label><input id="doc-file" name="file" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.eml,.png,.jpg,.jpeg" required/>
    <label htmlFor="doc-project">Project</label><select id="doc-project" name="project" required><option value="">Select project</option>{projects.map(p=><option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}</select>
    <label htmlFor="doc-contract">Contract</label><select id="doc-contract" name="contract"><option value="">Project evidence / no contract</option>{contracts.map(c=><option key={c.id} value={c.id}>{c.contract_number?c.contract_number+" · ":""}{c.title}</option>)}</select>
    <label htmlFor="doc-type">Document type</label><select id="doc-type" name="type"><option>Contract</option><option>Instruction</option><option>Correspondence</option><option>Programme</option><option>Commercial Record</option><option>Meeting Record</option><option>Technical Record</option><option>Unclassified</option></select>
