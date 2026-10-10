@@ -1,2 +1,19 @@
 import {AppShell} from "@/components/app-shell";
-export default function Billing(){return <AppShell><div className="pageHead"><div><div className="eyebrow">Commercial</div><h1>Plans & Billing</h1><div className="muted">Provider-neutral billing boundary. Connect a payment provider before paid production launch.</div></div></div><div className="split"><div className="card plan"><span className="badge medium">Professional</span><h2 style={{marginTop:10}}>For individual contract teams</h2><div className="price">Configurable</div><p className="muted">Projects, evidence, Gap Engine, actions, reporting and controlled AI usage.</p></div><div className="card plan"><span className="badge high">Business / Enterprise</span><h2 style={{marginTop:10}}>For organizations and portfolios</h2><div className="price">Annual</div><p className="muted">Advanced permissions, integrations, SSO, security review, implementation and support.</p></div></div><div className="notice" style={{marginTop:14}}>No payment credentials are collected by this baseline. Entitlements and provider webhooks will be implemented behind a billing adapter.</div></AppShell>}
+import {BillingClient} from "@/components/billing-client";
+import {getWorkspaceContext} from "@/lib/workspace";
+
+export default async function Billing(){
+  const w=await getWorkspaceContext();
+  const monthStart=new Date(new Date().getFullYear(),new Date().getMonth(),1).toISOString();
+  const [{data:account},{data:plans},{count:aiUsed},{count:members},{count:projects}]=await Promise.all([
+    w.supabase.from("billing_accounts").select("plan_code,status,trial_ends_at,current_period_end,cancel_at_period_end,provider_customer_id,provider_subscription_id").eq("organization_id",w.orgId).maybeSingle(),
+    w.supabase.from("plan_catalog").select("code,name,description,monthly_amount_minor,currency,seats_limit,projects_limit,ai_runs_monthly_limit,storage_gb_limit,features").eq("is_public",true).order("sort_order"),
+    w.supabase.from("ai_runs").select("id",{count:"exact",head:true}).eq("organization_id",w.orgId).gte("created_at",monthStart),
+    w.supabase.from("organization_members").select("user_id",{count:"exact",head:true}).eq("organization_id",w.orgId),
+    w.supabase.from("projects").select("id",{count:"exact",head:true}).eq("organization_id",w.orgId)
+  ]);
+  return <AppShell organizationName={w.organization?.name||"Workspace"}>
+    <div className="pageHead"><div><div className="eyebrow">Commercial</div><h1>Plans & Billing</h1><div className="muted">Subscription status, limits and upgrade controls for this organization.</div></div></div>
+    <BillingClient orgId={w.orgId} email={w.email||""} account={account} plans={plans||[]} usage={{ai:aiUsed||0,members:members||0,projects:projects||0}}/>
+  </AppShell>
+}

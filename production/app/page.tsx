@@ -24,7 +24,7 @@ export default function Home(){
     <header className="marketingNav">
       <Link href="/" className="marketingBrand"><span className="brandMark">W</span><span>WHAT IT IS<small>WHAT IT OUGHT TO BE</small></span></Link>
       <nav className="marketingLinks">
-        <a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#security">Security</a>
+        <a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#pricing">Pricing</a><a href="#security">Security</a>
       </nav>
       <div className="navActions"><Link className="btn subtle" href="/sign-in">Sign in</Link><Link className="btn primary" href="/sign-up">Start workspace</Link></div>
     </header>
@@ -98,6 +98,15 @@ export default function Home(){
     <section className="section softSection">
       <div className="sectionIntro"><div className="eyebrow">Client onboarding</div><h2>From signup to a working contract workspace in minutes.</h2><p>New clients are guided through the core setup rather than dropped into an empty application.</p></div>
       <div className="onboardingSteps">{onboarding.map(([n,t,d])=><div className="onboardCard" key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></div>)}</div>
+    </section>
+
+    <section className="section softSection" id="pricing">
+      <div className="sectionIntro"><div className="eyebrow">Simple launch pricing</div><h2>Start with a 14-day trial. Upgrade when the workspace proves its value.</h2><p>Pricing is shown in SAR for the Saudi launch profile. Checkout taxes are handled by the payment provider when billing is activated.</p></div>
+      <div className="pricingGrid">
+        <article className="pricingCard"><span className="badge medium">Professional</span><h3>Focused contract teams</h3><div className="marketingPrice"><b>SAR 499</b><span>/ month</span></div><p>Up to 8 users, 10 projects, 300 AI analyses/month and 50 GB document storage.</p><Link className="btn primary" href="/sign-up">Start 14-day trial</Link></article>
+        <article className="pricingCard featured"><span className="badge high">Business</span><h3>Multi-project organizations</h3><div className="marketingPrice"><b>SAR 1,499</b><span>/ month</span></div><p>Up to 30 users, 50 projects, 1,500 AI analyses/month, 500 GB storage and integration-ready controls.</p><Link className="btn primary" href="/sign-up">Start 14-day trial</Link></article>
+        <article className="pricingCard"><span className="badge neutral">Enterprise</span><h3>Portfolio & enterprise deployment</h3><div className="marketingPrice"><b>Custom</b><span>annual agreement</span></div><p>SSO, implementation, advanced permissions, integrations, security review and priority support.</p><Link className="btn" href="/assistant">Talk to the assistant</Link></article>
+      </div>
     </section>
 
     <section className="section" id="security">

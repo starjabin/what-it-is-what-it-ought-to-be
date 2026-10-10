@@ -36,6 +36,17 @@ export async function POST(request:Request){
   const {data:membership}=await supabase.from("organization_members").select("organization_id").eq("user_id",userId).limit(1).maybeSingle();
   if(!membership?.organization_id)return NextResponse.json({error:"Create a workspace before using the analyst."},{status:403});
 
+  const {data:billing}=await supabase.from("billing_accounts").select("status,trial_ends_at,plan_catalog(ai_runs_monthly_limit)").eq("organization_id",membership.organization_id).maybeSingle();
+  const active=billing?.status==="active"||(billing?.status==="trialing"&&(!billing.trial_ends_at||new Date(billing.trial_ends_at)>new Date()));
+  if(!active)return NextResponse.json({error:"Your trial or subscription is not active. Open Billing to continue."},{status:402});
+  const plan=billing?.plan_catalog as unknown as {ai_runs_monthly_limit:number|null}|null;
+  const limit=plan?.ai_runs_monthly_limit??null;
+  if(limit!==null){
+    const start=new Date();start.setUTCDate(1);start.setUTCHours(0,0,0,0);
+    const {count}=await supabase.from("ai_runs").select("id",{count:"exact",head:true}).eq("organization_id",membership.organization_id).gte("created_at",start.toISOString());
+    if((count||0)>=limit)return NextResponse.json({error:"This month's AI analysis allowance has been reached. Upgrade your plan in Billing."},{status:402});
+  }
+
   const body=await request.json().catch(()=>null) as {text?:string;context?:string}|null;
   if(!body?.text||body.text.length>120000)return NextResponse.json({error:"A valid source text is required."},{status:400});
 
