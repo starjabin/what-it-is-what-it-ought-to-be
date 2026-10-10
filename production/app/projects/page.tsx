@@ -1,3 +1,13 @@
 import {AppShell} from "@/components/app-shell";
-import {getWorkspaceSnapshot} from "@/lib/data";
-export default async function Projects(){const data=await getWorkspaceSnapshot();return <AppShell mode={data.mode}><div className="pageHead"><div><div className="eyebrow">Portfolio</div><h1>Projects</h1><div className="muted">International portfolio with market-specific operational controls.</div></div></div><div className="card"><div className="cardHead"><h2>Project portfolio</h2><span className="badge neutral">{data.projects.length} projects</span></div><div className="tableWrap"><table><thead><tr><th>Code</th><th>Project</th><th>Market</th><th>Status</th><th>Open gaps</th></tr></thead><tbody>{data.projects.map(p=><tr key={p.id}><td><b>{p.code}</b></td><td><div className="recordTitle">{p.name}</div></td><td>{p.market}</td><td><span className="badge good">{p.status}</span></td><td>{data.gaps.filter(g=>g.project===p.name).length}</td></tr>)}</tbody></table></div></div></AppShell>}
+import {ProjectsClient} from "@/components/projects-client";
+import {getWorkspaceContext} from "@/lib/workspace";
+
+export default async function ProjectsPage(){
+  const w=await getWorkspaceContext();
+  const {data:projects}=await w.supabase.from("projects")
+    .select("id,code,name,market,status,created_at").eq("organization_id",w.orgId).order("created_at",{ascending:false});
+  return <AppShell organizationName={w.organization?.name||"Workspace"}>
+    <div className="pageHead"><div><div className="eyebrow">Portfolio</div><h1>Projects</h1><div className="muted">Project context is the boundary for contracts, evidence, obligations, gaps and actions.</div></div></div>
+    <ProjectsClient orgId={w.orgId} userId={w.userId} projects={projects||[]} defaultMarket={w.organization?.market||"Global / International"}/>
+  </AppShell>
+}

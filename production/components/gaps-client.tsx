@@ -1,0 +1,35 @@
+"use client";
+import {FormEvent,useMemo,useState} from "react";
+import Link from "next/link";
+import {createClient} from "@/lib/supabase/client";
+type Gap={id:string;project_id:string;contract_id:string|null;what_is:string;what_ought_to_be:string;why:string;gap:string;impact:string;action:string;owner_user_id:string|null;owner_label:string|null;deadline:string|null;status:string;severity:string;confidence:string|null;source_kind:string;created_at:string;reviewed_at:string|null};
+type Project={id:string;code:string;name:string};type Contract={id:string;project_id:string;contract_number:string|null;title:string};
+type Evidence={id:string;project_id:string|null;contract_id:string|null;document_id:string;source_locator:string;excerpt:string|null;evidence_kind:string;documents:{file_name:string}|null};
+type Member={user_id:string;display_name:string|null;email:string|null;role:string};
+export function GapsClient({orgId,userId,gaps:initial,projects,contracts,evidence,members}:{orgId:string;userId:string;gaps:Gap[];projects:Project[];contracts:Contract[];evidence:Evidence[];members:Member[]}){
+ const [gaps,setGaps]=useState(initial),[message,setMessage]=useState("");
+ const names=useMemo(()=>Object.fromEntries(members.map(m=>[m.user_id,m.display_name||m.email||"Team member"])),[members]);
+ async function createGap(e:FormEvent<HTMLFormElement>){
+  e.preventDefault();setMessage("");const f=new FormData(e.currentTarget),projectId=String(f.get("project")||""),contractId=String(f.get("contract")||"")||null,owner=String(f.get("owner")||"")||null,deadline=String(f.get("deadline")||"")||null,evidenceIds=f.getAll("evidence").map(String);
+  const payload={organization_id:orgId,project_id:projectId,contract_id:contractId,what_is:String(f.get("what_is")||"").trim(),what_ought_to_be:String(f.get("what_ought")||"").trim(),why:String(f.get("why")||"").trim(),gap:String(f.get("gap")||"").trim(),impact:String(f.get("impact")||"").trim(),action:String(f.get("action")||"").trim(),owner_user_id:owner,owner_label:owner?names[owner]:String(f.get("owner_label")||"").trim()||null,deadline,status:"Under Review",severity:String(f.get("severity")||"Medium"),confidence:String(f.get("confidence")||"Medium"),source_kind:"human",created_by:userId};
+  if(!projectId||!payload.what_is||!payload.what_ought_to_be||!payload.why||!payload.gap||!payload.impact||!payload.action){setMessage("Complete the required Gap fields.");return}
+  const s=createClient();if(!s)return;const {data,error}=await s.from("gaps").insert(payload).select("*").single();if(error){setMessage(error.message);return}
+  if(evidenceIds.length){const selected=evidence.filter(x=>evidenceIds.includes(x.id));const {error:linkError}=await s.from("gap_evidence").insert(selected.map(x=>({gap_id:data.id,document_id:x.document_id,locator:x.source_locator,evidence_kind:x.evidence_kind==="contradictory"?"contradictory":"supporting",note:"Manual Gap evidence",evidence_id:x.id})));if(linkError){setMessage("Gap created, but evidence linking failed: "+linkError.message)}}
+  setGaps([data as Gap,...gaps]);e.currentTarget.reset();setMessage("Gap saved Under Review. A reviewer must confirm it before consequential action.");
+ }
+ return <div className="gapWorkspace"><section className="card"><div className="cardHead"><div><h2>Gap register</h2><div className="muted">{gaps.length} finding{gaps.length===1?"":"s"}</div></div><Link className="btn primary" href="/analyst">Generate candidate from evidence</Link></div><div className="tableWrap"><table><thead><tr><th>Severity</th><th>Gap / impact</th><th>Contract</th><th>Owner / due</th><th>Status</th><th>Source</th></tr></thead><tbody>{gaps.map(g=><tr key={g.id}><td><span className={"badge "+g.severity.toLowerCase()}>{g.severity}</span></td><td><Link href={"/gaps/"+g.id} className="recordTitle">{g.gap}</Link><div className="meta">{g.impact}</div></td><td>{contracts.find(c=>c.id===g.contract_id)?.title||projects.find(p=>p.id===g.project_id)?.code||"—"}</td><td>{g.owner_user_id?names[g.owner_user_id]:g.owner_label||"Unassigned"}<div className="meta">{g.deadline||"No deadline"}</div></td><td><span className="badge neutral">{g.status}</span></td><td>{g.source_kind==="ai"?"AI proposal":"Human"}</td></tr>)}</tbody></table></div></section>
+ <section className="card"><div className="cardHead"><h2>Create manual Gap record</h2><span className="badge neutral">All 10 fields</span></div><div className="cardBody"><form onSubmit={createGap}>
+  <div className="formTwo"><div><label htmlFor="gap-project">Project</label><select id="gap-project" name="project" required><option value="">Select</option>{projects.map(p=><option value={p.id} key={p.id}>{p.code} · {p.name}</option>)}</select></div><div><label htmlFor="gap-contract">Contract</label><select id="gap-contract" name="contract"><option value="">Project-level</option>{contracts.map(c=><option value={c.id} key={c.id}>{c.contract_number?c.contract_number+" · ":""}{c.title}</option>)}</select></div></div>
+  <label htmlFor="what-is">WHAT IT IS</label><textarea id="what-is" name="what_is" required/>
+  <label htmlFor="what-ought">WHAT IT OUGHT TO BE</label><textarea id="what-ought" name="what_ought" required/>
+  <label htmlFor="gap-why">WHY</label><textarea id="gap-why" name="why" required/>
+  <label htmlFor="gap-evidence">EVIDENCE</label><select id="gap-evidence" name="evidence" multiple size={5}>{evidence.map(ev=><option key={ev.id} value={ev.id}>{ev.documents?.file_name||"Source"} · {ev.source_locator}</option>)}</select>
+  <label htmlFor="gap-text">GAP</label><textarea id="gap-text" name="gap" required/>
+  <label htmlFor="gap-impact">IMPACT</label><textarea id="gap-impact" name="impact" required/>
+  <label htmlFor="gap-action">ACTION</label><textarea id="gap-action" name="action" required/>
+  <div className="formTwo"><div><label htmlFor="gap-owner">OWNER</label><select id="gap-owner" name="owner"><option value="">Unassigned</option>{members.map(m=><option value={m.user_id} key={m.user_id}>{m.display_name||m.email||"Team member"}</option>)}</select></div><div><label htmlFor="gap-deadline">DEADLINE</label><input id="gap-deadline" name="deadline" type="date"/></div></div>
+  <div className="formTwo"><div><label htmlFor="gap-severity">Severity</label><select id="gap-severity" name="severity"><option>Critical</option><option>High</option><option selected>Medium</option><option>Low</option><option>Informational</option></select></div><div><label htmlFor="gap-confidence">Confidence</label><select id="gap-confidence" name="confidence"><option>High</option><option selected>Medium</option><option>Low</option></select></div></div>
+  <div className="gapStatusPreview"><b>STATUS</b><span>Under Review</span></div>
+  <button className="btn primary" style={{width:"100%",marginTop:14}}>Save for review</button>
+ </form>{message&&<div className="notice" style={{marginTop:12}}>{message}</div>}</div></section></div>
+}

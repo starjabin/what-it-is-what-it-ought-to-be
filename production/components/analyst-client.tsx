@@ -1,56 +1,11 @@
 "use client";
-
 import {FormEvent,useState} from "react";
-
-type Proposal={
-  what_is:string;what_ought_to_be:string;why:string;evidence:string[];gap:string;impact:string;action:string;
-  owner:string;deadline:string;status:string;severity:string;confidence:string;missing_information:string[];
-};
-
-export function AnalystClient(){
-  const [text,setText]=useState("");
-  const [context,setContext]=useState("");
-  const [proposal,setProposal]=useState<Proposal|null>(null);
-  const [message,setMessage]=useState("");
-  const [busy,setBusy]=useState(false);
-
-  async function analyze(e:FormEvent){
-    e.preventDefault();if(!text.trim())return;
-    setBusy(true);setMessage("");setProposal(null);
-    try{
-      const res=await fetch("/api/ai/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,context})});
-      const data=await res.json();
-      if(!res.ok){setMessage(data.error||"Analysis failed.");return}
-      setProposal(data.proposal);
-    }catch{setMessage("Analysis failed. Please try again.")}
-    finally{setBusy(false)}
-  }
-
-  const fields: [string,string|string[]][] = proposal ? [
-    ["WHAT IT IS",proposal.what_is],["WHAT IT OUGHT TO BE",proposal.what_ought_to_be],["WHY",proposal.why],
-    ["EVIDENCE",proposal.evidence],["GAP",proposal.gap],["IMPACT",proposal.impact],["ACTION",proposal.action],
-    ["OWNER",proposal.owner],["DEADLINE",proposal.deadline],["STATUS",proposal.status],
-    ["SEVERITY",proposal.severity],["CONFIDENCE",proposal.confidence],["MISSING INFORMATION",proposal.missing_information]
-  ] : [];
-
-  return <div className="analystGrid">
-    <form className="card cardBody" onSubmit={analyze}>
-      <div className="eyebrow">Evidence input</div>
-      <h2>Analyze a contract record</h2>
-      <p className="muted">Paste source material for a proposed Gap record. AI proposals require human review before operational use.</p>
-      <label>Context</label>
-      <textarea value={context} onChange={e=>setContext(e.target.value)} rows={4} placeholder="Project, contract, event, question or analysis objective…"/>
-      <label>Source material</label>
-      <textarea value={text} onChange={e=>setText(e.target.value)} rows={14} maxLength={120000} placeholder="Paste the relevant clause, instruction, correspondence, programme narrative or other evidence…" required/>
-      <button className="btn primary" style={{marginTop:14}} disabled={busy}>{busy?"Analyzing…":"Run Gap analysis"}</button>
-      {message&&<div className="notice" style={{marginTop:12}}>{message}</div>}
-    </form>
-    <section className="card">
-      <div className="cardHead"><h2>Proposed Gap record</h2><span className="badge neutral">Human review required</span></div>
-      <div className="cardBody">
-        {!proposal?<div className="emptyState">Run an analysis to generate a structured, evidence-led proposal.</div>:
-          <div>{fields.map(([label,value])=><div className="analysisField" key={label}><div className="eyebrow">{label}</div><div>{Array.isArray(value)?(value.length?value.join(" · "):"None identified"):value||"—"}</div></div>)}</div>}
-      </div>
-    </section>
-  </div>
+import Link from "next/link";
+type Contract={id:string;contract_number:string|null;title:string};
+type Proposal={what_is:string;what_ought_to_be:string;why:string;evidence_ids:string[];gap:string;impact:string;action:string;owner:string;deadline:string;status:string;severity:string;confidence:string;missing_information:string[]};
+export function AnalystClient({contracts,counts}:{contracts:Contract[];counts:Record<string,{evidence:number;obligations:number}>}){
+ const [contractId,setContractId]=useState(contracts[0]?.id||""),[objective,setObjective]=useState("Identify material contractual gaps that require review or accountable action."),[proposal,setProposal]=useState<Proposal|null>(null),[gapId,setGapId]=useState(""),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ async function analyze(e:FormEvent){e.preventDefault();if(!contractId)return;setBusy(true);setMessage("");setProposal(null);setGapId("");try{const res=await fetch("/api/ai/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contractId,objective})});const data=await res.json();if(!res.ok){setMessage(data.error||"Analysis failed.");return}setProposal(data.proposal);setGapId(data.gap_id);setMessage("AI candidate created Under Review. Open it to verify evidence and decide whether to confirm it.")}catch{setMessage("Analysis failed safely. No finding was confirmed.")}finally{setBusy(false)}}
+ const c=counts[contractId]||{evidence:0,obligations:0};
+ return <div className="analystGrid"><form className="card cardBody" onSubmit={analyze}><div className="eyebrow">Evidence scope</div><h2>Analyze a contract position</h2><p className="muted">Only stored tenant evidence and extracted obligations are sent to the model. Uploaded source content is treated as untrusted evidence.</p><label htmlFor="analyst-contract">Contract</label><select id="analyst-contract" value={contractId} onChange={e=>setContractId(e.target.value)}><option value="">Select contract</option>{contracts.map(c=><option key={c.id} value={c.id}>{c.contract_number?c.contract_number+" · ":""}{c.title}</option>)}</select><div className="evidenceReadiness"><span>{c.evidence} evidence records</span><span>{c.obligations} obligations</span></div><label htmlFor="analysis-objective">Analysis objective</label><textarea id="analysis-objective" value={objective} onChange={e=>setObjective(e.target.value)} rows={6}/><button className="btn primary" style={{marginTop:14}} disabled={busy||!contractId||c.evidence===0}>{busy?"Analyzing cited evidence…":"Generate Gap candidate"}</button>{c.evidence===0&&<div className="footerNote">Process and review a contract document first.</div>}{message&&<div className="notice" style={{marginTop:12}}>{message}</div>}</form><section className="card"><div className="cardHead"><h2>Proposed Gap</h2><span className="badge neutral">Human review required</span></div><div className="cardBody">{!proposal?<div className="emptyState">No AI candidate in this session.</div>:<div>{[["WHAT IT IS",proposal.what_is],["WHAT IT OUGHT TO BE",proposal.what_ought_to_be],["WHY",proposal.why],["GAP",proposal.gap],["IMPACT",proposal.impact],["ACTION",proposal.action],["OWNER",proposal.owner],["DEADLINE",proposal.deadline],["STATUS",proposal.status],["SEVERITY",proposal.severity],["CONFIDENCE",proposal.confidence],["MISSING INFORMATION",proposal.missing_information.join(" · ")||"None stated"]].map(([k,v])=><div className="analysisField" key={k}><div className="eyebrow">{k}</div><div>{v||"—"}</div></div>)}{gapId&&<Link className="btn primary" href={"/gaps/"+gapId}>Open review record</Link>}</div>}</div></section></div>
 }

@@ -71,6 +71,109 @@ export type Database = {
           },
         ]
       }
+      ai_citations: {
+        Row: {
+          ai_output_id: string
+          citation_label: string | null
+          created_at: string
+          evidence_id: string
+          id: string
+          organization_id: string
+        }
+        Insert: {
+          ai_output_id: string
+          citation_label?: string | null
+          created_at?: string
+          evidence_id: string
+          id?: string
+          organization_id: string
+        }
+        Update: {
+          ai_output_id?: string
+          citation_label?: string | null
+          created_at?: string
+          evidence_id?: string
+          id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_citations_ai_output_id_fkey"
+            columns: ["ai_output_id"]
+            isOneToOne: false
+            referencedRelation: "ai_outputs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_citations_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_citations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_outputs: {
+        Row: {
+          ai_run_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          output_json: Json
+          output_type: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_outcome: string | null
+          schema_version: string
+        }
+        Insert: {
+          ai_run_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          output_json: Json
+          output_type: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_outcome?: string | null
+          schema_version: string
+        }
+        Update: {
+          ai_run_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          output_json?: Json
+          output_type?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_outcome?: string | null
+          schema_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_outputs_ai_run_id_fkey"
+            columns: ["ai_run_id"]
+            isOneToOne: false
+            referencedRelation: "ai_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_outputs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_runs: {
         Row: {
           cost_minor_units: number | null
@@ -137,6 +240,68 @@ export type Database = {
           },
         ]
       }
+      ai_settings: {
+        Row: {
+          alert_percent: number
+          external_actions_require_approval: boolean
+          fast_model: string
+          financial_actions_require_approval: boolean
+          main_model: string
+          monthly_cap_usd: number | null
+          organization_id: string
+          processing_region: string
+          prompt_log_retention_days: number
+          provider: string
+          reasoning_model: string
+          redact_personal_data: boolean
+          require_source_citations: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          alert_percent?: number
+          external_actions_require_approval?: boolean
+          fast_model?: string
+          financial_actions_require_approval?: boolean
+          main_model?: string
+          monthly_cap_usd?: number | null
+          organization_id: string
+          processing_region?: string
+          prompt_log_retention_days?: number
+          provider?: string
+          reasoning_model?: string
+          redact_personal_data?: boolean
+          require_source_citations?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          alert_percent?: number
+          external_actions_require_approval?: boolean
+          fast_model?: string
+          financial_actions_require_approval?: boolean
+          main_model?: string
+          monthly_cap_usd?: number | null
+          organization_id?: string
+          processing_region?: string
+          prompt_log_retention_days?: number
+          provider?: string
+          reasoning_model?: string
+          redact_personal_data?: boolean
+          require_source_citations?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           action: string
@@ -174,6 +339,110 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "audit_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_accounts: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          organization_id: string
+          plan_code: string
+          provider: string
+          provider_customer_id: string | null
+          provider_subscription_id: string | null
+          status: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          organization_id: string
+          plan_code?: string
+          provider?: string
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          organization_id?: string
+          plan_code?: string
+          provider?: string
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_accounts_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "plan_catalog"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      billing_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: number
+          organization_id: string | null
+          payload: Json
+          processed_at: string | null
+          processing_error: string | null
+          provider: string
+          provider_event_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: never
+          organization_id?: string | null
+          payload: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          provider: string
+          provider_event_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: never
+          organization_id?: string | null
+          payload?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          provider?: string
+          provider_event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -226,39 +495,159 @@ export type Database = {
           },
         ]
       }
+      clauses: {
+        Row: {
+          ai_run_id: string | null
+          clause_number: string | null
+          clause_text: string
+          confidence: string | null
+          contract_id: string
+          created_at: string
+          document_version_id: string
+          heading: string | null
+          id: string
+          organization_id: string
+          page_end: number | null
+          page_start: number | null
+          project_id: string
+          source_locator: string
+        }
+        Insert: {
+          ai_run_id?: string | null
+          clause_number?: string | null
+          clause_text: string
+          confidence?: string | null
+          contract_id: string
+          created_at?: string
+          document_version_id: string
+          heading?: string | null
+          id?: string
+          organization_id: string
+          page_end?: number | null
+          page_start?: number | null
+          project_id: string
+          source_locator: string
+        }
+        Update: {
+          ai_run_id?: string | null
+          clause_number?: string | null
+          clause_text?: string
+          confidence?: string | null
+          contract_id?: string
+          created_at?: string
+          document_version_id?: string
+          heading?: string | null
+          id?: string
+          organization_id?: string
+          page_end?: number | null
+          page_start?: number | null
+          project_id?: string
+          source_locator?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clauses_ai_run_id_fkey"
+            columns: ["ai_run_id"]
+            isOneToOne: false
+            referencedRelation: "ai_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clauses_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clauses_document_version_id_fkey"
+            columns: ["document_version_id"]
+            isOneToOne: false
+            referencedRelation: "document_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clauses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clauses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
+          commencement_date: string | null
+          completion_date: string | null
+          consultant: string | null
           contract_number: string | null
+          contract_type: string | null
           contract_value: number | null
+          contractor: string | null
           counterparty: string | null
           created_at: string
+          created_by: string | null
           currency: string | null
+          effective_date: string | null
+          employer: string | null
+          governing_law: string | null
           id: string
           organization_id: string
           project_id: string
+          status: string
           title: string
+          updated_at: string
         }
         Insert: {
+          commencement_date?: string | null
+          completion_date?: string | null
+          consultant?: string | null
           contract_number?: string | null
+          contract_type?: string | null
           contract_value?: number | null
+          contractor?: string | null
           counterparty?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string | null
+          effective_date?: string | null
+          employer?: string | null
+          governing_law?: string | null
           id?: string
           organization_id: string
           project_id: string
+          status?: string
           title: string
+          updated_at?: string
         }
         Update: {
+          commencement_date?: string | null
+          completion_date?: string | null
+          consultant?: string | null
           contract_number?: string | null
+          contract_type?: string | null
           contract_value?: number | null
+          contractor?: string | null
           counterparty?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string | null
+          effective_date?: string | null
+          employer?: string | null
+          governing_law?: string | null
           id?: string
           organization_id?: string
           project_id?: string
+          status?: string
           title?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -270,6 +659,84 @@ export type Database = {
           },
           {
             foreignKeyName: "contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      definitions: {
+        Row: {
+          ai_run_id: string | null
+          confidence: string | null
+          contract_id: string
+          created_at: string
+          definition_text: string
+          document_version_id: string
+          id: string
+          organization_id: string
+          project_id: string
+          source_locator: string
+          term: string
+        }
+        Insert: {
+          ai_run_id?: string | null
+          confidence?: string | null
+          contract_id: string
+          created_at?: string
+          definition_text: string
+          document_version_id: string
+          id?: string
+          organization_id: string
+          project_id: string
+          source_locator: string
+          term: string
+        }
+        Update: {
+          ai_run_id?: string | null
+          confidence?: string | null
+          contract_id?: string
+          created_at?: string
+          definition_text?: string
+          document_version_id?: string
+          id?: string
+          organization_id?: string
+          project_id?: string
+          source_locator?: string
+          term?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "definitions_ai_run_id_fkey"
+            columns: ["ai_run_id"]
+            isOneToOne: false
+            referencedRelation: "ai_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definitions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definitions_document_version_id_fkey"
+            columns: ["document_version_id"]
+            isOneToOne: false
+            referencedRelation: "document_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definitions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definitions_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -337,15 +804,86 @@ export type Database = {
           },
         ]
       }
+      document_versions: {
+        Row: {
+          byte_size: number | null
+          content_hash: string | null
+          created_at: string
+          created_by: string | null
+          document_id: string
+          extracted_at: string | null
+          file_name: string
+          id: string
+          is_current: boolean
+          mime_type: string | null
+          organization_id: string
+          processing_error: string | null
+          processing_status: Database["public"]["Enums"]["document_processing_status"]
+          storage_path: string
+          version_no: number
+        }
+        Insert: {
+          byte_size?: number | null
+          content_hash?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          extracted_at?: string | null
+          file_name: string
+          id?: string
+          is_current?: boolean
+          mime_type?: string | null
+          organization_id: string
+          processing_error?: string | null
+          processing_status?: Database["public"]["Enums"]["document_processing_status"]
+          storage_path: string
+          version_no: number
+        }
+        Update: {
+          byte_size?: number | null
+          content_hash?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          extracted_at?: string | null
+          file_name?: string
+          id?: string
+          is_current?: boolean
+          mime_type?: string | null
+          organization_id?: string
+          processing_error?: string | null
+          processing_status?: Database["public"]["Enums"]["document_processing_status"]
+          storage_path?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content_hash: string | null
           contract_id: string | null
           created_at: string
+          current_version_id: string | null
           document_type: string | null
           file_name: string
           id: string
           organization_id: string
+          processing_status: Database["public"]["Enums"]["document_processing_status"]
           project_id: string | null
           storage_path: string
           uploaded_by: string | null
@@ -355,10 +893,12 @@ export type Database = {
           content_hash?: string | null
           contract_id?: string | null
           created_at?: string
+          current_version_id?: string | null
           document_type?: string | null
           file_name: string
           id?: string
           organization_id: string
+          processing_status?: Database["public"]["Enums"]["document_processing_status"]
           project_id?: string | null
           storage_path: string
           uploaded_by?: string | null
@@ -368,10 +908,12 @@ export type Database = {
           content_hash?: string | null
           contract_id?: string | null
           created_at?: string
+          current_version_id?: string | null
           document_type?: string | null
           file_name?: string
           id?: string
           organization_id?: string
+          processing_status?: Database["public"]["Enums"]["document_processing_status"]
           project_id?: string | null
           storage_path?: string
           uploaded_by?: string | null
@@ -383,6 +925,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_current_version_id_fkey"
+            columns: ["current_version_id"]
+            isOneToOne: false
+            referencedRelation: "document_versions"
             referencedColumns: ["id"]
           },
           {
@@ -401,9 +950,164 @@ export type Database = {
           },
         ]
       }
+      email_outbox: {
+        Row: {
+          attempts: number
+          created_at: string
+          id: string
+          last_error: string | null
+          organization_id: string | null
+          payload: Json
+          recipient: string
+          sent_at: string | null
+          status: string
+          subject: string
+          template: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          organization_id?: string | null
+          payload?: Json
+          recipient: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          organization_id?: string | null
+          payload?: Json
+          recipient?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_outbox_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence: {
+        Row: {
+          clause_id: string | null
+          content_hash: string | null
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          document_id: string
+          document_version_id: string
+          evidence_kind: string
+          excerpt: string | null
+          id: string
+          obligation_id: string | null
+          organization_id: string
+          project_id: string | null
+          source_locator: string
+          source_type: string
+        }
+        Insert: {
+          clause_id?: string | null
+          content_hash?: string | null
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          document_version_id: string
+          evidence_kind?: string
+          excerpt?: string | null
+          id?: string
+          obligation_id?: string | null
+          organization_id: string
+          project_id?: string | null
+          source_locator: string
+          source_type?: string
+        }
+        Update: {
+          clause_id?: string | null
+          content_hash?: string | null
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          document_version_id?: string
+          evidence_kind?: string
+          excerpt?: string | null
+          id?: string
+          obligation_id?: string | null
+          organization_id?: string
+          project_id?: string | null
+          source_locator?: string
+          source_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_clause_id_fkey"
+            columns: ["clause_id"]
+            isOneToOne: false
+            referencedRelation: "clauses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_document_version_id_fkey"
+            columns: ["document_version_id"]
+            isOneToOne: false
+            referencedRelation: "document_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_obligation_id_fkey"
+            columns: ["obligation_id"]
+            isOneToOne: false
+            referencedRelation: "obligations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gap_evidence: {
         Row: {
           document_id: string
+          evidence_id: string | null
           evidence_kind: string
           gap_id: string
           locator: string
@@ -411,6 +1115,7 @@ export type Database = {
         }
         Insert: {
           document_id: string
+          evidence_id?: string | null
           evidence_kind?: string
           gap_id: string
           locator?: string
@@ -418,6 +1123,7 @@ export type Database = {
         }
         Update: {
           document_id?: string
+          evidence_id?: string | null
           evidence_kind?: string
           gap_id?: string
           locator?: string
@@ -432,10 +1138,62 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "gap_evidence_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "gap_evidence_gap_id_fkey"
             columns: ["gap_id"]
             isOneToOne: false
             referencedRelation: "gaps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gap_history: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          event: string
+          gap_id: string
+          id: number
+          organization_id: string
+          snapshot: Json
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event: string
+          gap_id: string
+          id?: never
+          organization_id: string
+          snapshot: Json
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event?: string
+          gap_id?: string
+          id?: never
+          organization_id?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gap_history_gap_id_fkey"
+            columns: ["gap_id"]
+            isOneToOne: false
+            referencedRelation: "gaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gap_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -595,6 +1353,156 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          href: string | null
+          id: string
+          kind: string
+          organization_id: string
+          read_at: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          kind: string
+          organization_id: string
+          read_at?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          kind?: string
+          organization_id?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obligations: {
+        Row: {
+          ai_run_id: string | null
+          beneficiary_party: string | null
+          clause_id: string | null
+          confidence: string | null
+          consequence: string | null
+          contract_id: string
+          created_at: string
+          document_version_id: string
+          id: string
+          obligation_text: string
+          obligation_type: string | null
+          organization_id: string
+          project_id: string
+          responsible_party: string | null
+          source_locator: string
+          status: string
+          timing_requirement: string | null
+          trigger_condition: string | null
+        }
+        Insert: {
+          ai_run_id?: string | null
+          beneficiary_party?: string | null
+          clause_id?: string | null
+          confidence?: string | null
+          consequence?: string | null
+          contract_id: string
+          created_at?: string
+          document_version_id: string
+          id?: string
+          obligation_text: string
+          obligation_type?: string | null
+          organization_id: string
+          project_id: string
+          responsible_party?: string | null
+          source_locator: string
+          status?: string
+          timing_requirement?: string | null
+          trigger_condition?: string | null
+        }
+        Update: {
+          ai_run_id?: string | null
+          beneficiary_party?: string | null
+          clause_id?: string | null
+          confidence?: string | null
+          consequence?: string | null
+          contract_id?: string
+          created_at?: string
+          document_version_id?: string
+          id?: string
+          obligation_text?: string
+          obligation_type?: string | null
+          organization_id?: string
+          project_id?: string
+          responsible_party?: string | null
+          source_locator?: string
+          status?: string
+          timing_requirement?: string | null
+          trigger_condition?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obligations_ai_run_id_fkey"
+            columns: ["ai_run_id"]
+            isOneToOne: false
+            referencedRelation: "ai_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obligations_clause_id_fkey"
+            columns: ["clause_id"]
+            isOneToOne: false
+            referencedRelation: "clauses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obligations_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obligations_document_version_id_fkey"
+            columns: ["document_version_id"]
+            isOneToOne: false
+            referencedRelation: "document_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obligations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obligations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -663,10 +1571,59 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_catalog: {
+        Row: {
+          ai_runs_monthly_limit: number | null
+          code: string
+          created_at: string
+          currency: string
+          description: string | null
+          features: Json
+          is_public: boolean
+          monthly_amount_minor: number | null
+          name: string
+          projects_limit: number | null
+          seats_limit: number | null
+          sort_order: number
+          storage_gb_limit: number | null
+        }
+        Insert: {
+          ai_runs_monthly_limit?: number | null
+          code: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json
+          is_public?: boolean
+          monthly_amount_minor?: number | null
+          name: string
+          projects_limit?: number | null
+          seats_limit?: number | null
+          sort_order?: number
+          storage_gb_limit?: number | null
+        }
+        Update: {
+          ai_runs_monthly_limit?: number | null
+          code?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json
+          is_public?: boolean
+          monthly_amount_minor?: number | null
+          name?: string
+          projects_limit?: number | null
+          seats_limit?: number | null
+          sort_order?: number
+          storage_gb_limit?: number | null
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           code: string
           created_at: string
+          created_by: string | null
           id: string
           market: string
           name: string
@@ -676,6 +1633,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          created_by?: string | null
           id?: string
           market?: string
           name: string
@@ -685,6 +1643,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          created_by?: string | null
           id?: string
           market?: string
           name?: string
@@ -697,6 +1656,61 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_snapshots: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          project_id: string | null
+          report_type: string
+          snapshot: Json
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          project_id?: string | null
+          report_type: string
+          snapshot: Json
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          project_id?: string | null
+          report_type?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_snapshots_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_snapshots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -779,8 +1793,31 @@ export type Database = {
         }
         Returns: Json
       }
+      bootstrap_workspace_v3: {
+        Args: {
+          p_contract_number: string
+          p_contract_title: string
+          p_currency: string
+          p_display_name: string
+          p_job_title: string
+          p_market: string
+          p_organization_name: string
+          p_project_code: string
+          p_project_name: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
+      document_processing_status:
+        | "queued"
+        | "uploading"
+        | "validating"
+        | "processing"
+        | "needs review"
+        | "ready"
+        | "partial failure"
+        | "failed"
       gap_severity: "Critical" | "High" | "Medium" | "Low" | "Informational"
       gap_status:
         | "Detected"
@@ -790,6 +1827,11 @@ export type Database = {
         | "In Progress"
         | "Resolved"
         | "Closed"
+        | "Disputed"
+        | "Deferred"
+        | "Rejected"
+        | "Monitoring"
+        | "Not Applicable"
       member_role:
         | "owner"
         | "admin"
@@ -925,6 +1967,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      document_processing_status: [
+        "queued",
+        "uploading",
+        "validating",
+        "processing",
+        "needs review",
+        "ready",
+        "partial failure",
+        "failed",
+      ],
       gap_severity: ["Critical", "High", "Medium", "Low", "Informational"],
       gap_status: [
         "Detected",
@@ -934,6 +1986,11 @@ export const Constants = {
         "In Progress",
         "Resolved",
         "Closed",
+        "Disputed",
+        "Deferred",
+        "Rejected",
+        "Monitoring",
+        "Not Applicable",
       ],
       member_role: [
         "owner",
