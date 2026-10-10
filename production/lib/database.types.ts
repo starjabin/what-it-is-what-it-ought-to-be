@@ -181,6 +181,51 @@ export type Database = {
           },
         ]
       }
+      channels: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          project_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          project_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          project_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channels_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channels_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           contract_number: string | null
@@ -228,6 +273,66 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_assignments: {
+        Row: {
+          assignee_label: string | null
+          assignee_user_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          document_id: string
+          due_at: string | null
+          id: string
+          instruction: string
+          organization_id: string
+          priority: string
+          status: string
+        }
+        Insert: {
+          assignee_label?: string | null
+          assignee_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          document_id: string
+          due_at?: string | null
+          id?: string
+          instruction: string
+          organization_id: string
+          priority?: string
+          status?: string
+        }
+        Update: {
+          assignee_label?: string | null
+          assignee_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          document_id?: string
+          due_at?: string | null
+          id?: string
+          instruction?: string
+          organization_id?: string
+          priority?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_assignments_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -442,21 +547,78 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          body: string
+          channel_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          organization_id: string
+          sender_user_id: string
+        }
+        Insert: {
+          body: string
+          channel_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          organization_id: string
+          sender_user_id: string
+        }
+        Update: {
+          body?: string
+          channel_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          organization_id?: string
+          sender_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
+          display_name: string | null
+          email: string | null
+          job_title: string | null
           organization_id: string
           role: Database["public"]["Enums"]["member_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
+          display_name?: string | null
+          email?: string | null
+          job_title?: string | null
           organization_id: string
           role?: Database["public"]["Enums"]["member_role"]
           user_id: string
         }
         Update: {
           created_at?: string
+          display_name?: string | null
+          email?: string | null
+          job_title?: string | null
           organization_id?: string
           role?: Database["public"]["Enums"]["member_role"]
           user_id?: string
@@ -539,12 +701,84 @@ export type Database = {
           },
         ]
       }
+      team_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          job_title: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["member_role"]
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          job_title?: string | null
+          organization_id: string
+          role?: Database["public"]["Enums"]["member_role"]
+          status?: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          job_title?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["member_role"]
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_team_invitation: { Args: { p_token: string }; Returns: Json }
+      bootstrap_workspace: {
+        Args: {
+          p_currency: string
+          p_market: string
+          p_organization_name: string
+          p_project_code: string
+          p_project_name: string
+        }
+        Returns: Json
+      }
+      bootstrap_workspace_v2: {
+        Args: {
+          p_currency: string
+          p_display_name: string
+          p_job_title: string
+          p_market: string
+          p_organization_name: string
+          p_project_code: string
+          p_project_name: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       gap_severity: "Critical" | "High" | "Medium" | "Low" | "Informational"
