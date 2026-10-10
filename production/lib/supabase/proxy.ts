@@ -1,6 +1,6 @@
 import {createServerClient} from "@supabase/ssr";
 import {NextResponse,type NextRequest} from "next/server";
-const exactPublic=new Set(["/","/sign-in","/sign-up","/assistant","/privacy","/terms","/dpa","/robots.txt","/sitemap.xml","/api/health","/api/customer-assistant"]);
+const exactPublic=new Set(["/","/sign-in","/sign-up","/privacy","/terms","/dpa","/robots.txt","/sitemap.xml","/api/health"]);
 function isPublic(path:string){return exactPublic.has(path)||path.startsWith("/auth/")||path.startsWith("/join/")||path.startsWith("/_next/")}
 export async function updateSession(request:NextRequest){
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;

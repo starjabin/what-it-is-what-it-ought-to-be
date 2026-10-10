@@ -35,7 +35,7 @@ export default function Home(){
         <div className="pill">Contract Intelligence Operating System</div>
         <h1>Turn contract risk into <span>clear, owned action.</span></h1>
         <p>Move from scattered contracts, email threads and spreadsheets to one evidence-led workspace for position, gaps, impacts, actions, accountability and outcomes.</p>
-        <div className="heroButtons"><Link className="btn primary large" href="/sign-up">Create your workspace</Link><Link className="btn darkOutline large" href="/assistant">Ask the product assistant</Link></div>
+        <div className="heroButtons"><Link className="btn primary large" href="/sign-up">Create your workspace</Link><Link className="btn darkOutline large" href="/sign-in">Sign in to workspace</Link></div>
         <div className="heroProof"><span>Evidence before opinion</span><span>Human-controlled AI</span><span>Private tenant workspaces</span><span>International by design</span></div>
       </div>
 
@@ -105,7 +105,7 @@ export default function Home(){
       <div className="pricingGrid">
         <article className="pricingCard"><span className="badge medium">Professional</span><h3>Focused contract teams</h3><div className="marketingPrice"><b>SAR 699</b><span>/ month</span></div><p>Pilot pricing hypothesis · limits validated through design partners.</p><Link className="btn primary" href="/sign-up">Start 14-day trial</Link></article>
         <article className="pricingCard featured"><span className="badge high">Business</span><h3>Multi-project organizations</h3><div className="marketingPrice"><b>SAR 1,999</b><span>/ month</span></div><p>Pilot pricing hypothesis · multi-project controls and integration readiness.</p><Link className="btn primary" href="/sign-up">Start 14-day trial</Link></article>
-        <article className="pricingCard"><span className="badge neutral">Enterprise</span><h3>Portfolio & enterprise deployment</h3><div className="marketingPrice"><b>Custom</b><span>annual agreement</span></div><p>SSO, implementation, advanced permissions, integrations, security review and priority support.</p><Link className="btn" href="/assistant">Talk to the assistant</Link></article>
+        <article className="pricingCard"><span className="badge neutral">Enterprise</span><h3>Portfolio & enterprise deployment</h3><div className="marketingPrice"><b>Custom</b><span>annual agreement</span></div><p>SSO, implementation, advanced permissions, integrations, security review and priority support.</p><Link className="btn" href="/sign-up">Create workspace</Link></article>
       </div>
     </section>
 
@@ -121,6 +121,6 @@ export default function Home(){
       <div className="heroButtons"><Link className="btn primary large" href="/sign-up">Create workspace</Link><Link className="btn darkOutline large" href="/sign-in">Sign in</Link></div>
     </section>
 
-    <footer className="marketingFooter"><div><b>WHAT IT IS / WHAT IT OUGHT TO BE</b><span>Contract Intelligence that turns gaps into action.</span></div><div><Link href="/assistant">Customer Assistant</Link><Link href="/sign-in">Sign in</Link><Link href="/sign-up">Create account</Link></div></footer>
+    <footer className="marketingFooter"><div><b>WHAT IT IS / WHAT IT OUGHT TO BE</b><span>Contract Intelligence that turns gaps into action.</span></div><div><Link href="/assistant">Internal Assistant</Link><Link href="/sign-in">Sign in</Link><Link href="/sign-up">Create account</Link></div></footer>
   </main>
 }
