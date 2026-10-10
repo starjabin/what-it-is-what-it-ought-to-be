@@ -10,7 +10,7 @@ const modules=[
 ];
 
 const onboarding=[
-  ["01","Continue with ChatGPT","Use the approved ChatGPT identity route; ContractGap does not receive your ChatGPT conversations."],
+  ["01","Create ContractGap account","Create your own workspace identity; ChatGPT remains an optional supporting integration."],
   ["02","Set up organization","Create the organization, first project and first contract."],
   ["03","Upload contract package","Bring the controlled contract source into private, versioned storage."],
   ["04","Review the OUGHT","Verify extracted clauses, definitions and obligations with source locators."],
@@ -35,7 +35,7 @@ export default function Home(){
         <div className="pill">Contract Intelligence Operating System</div>
         <h1>Turn contract risk into <span>clear, owned action.</span></h1>
         <p>Move from scattered contracts, email threads and spreadsheets to one evidence-led workspace for position, gaps, impacts, actions, accountability and outcomes.</p>
-        <div className="heroButtons"><Link className="btn primary large" href="/sign-in">Create your workspace</Link><Link className="btn darkOutline large" href="/assistant">Ask the product assistant</Link></div>
+        <div className="heroButtons"><Link className="btn primary large" href="/sign-up">Create your workspace</Link><Link className="btn darkOutline large" href="/assistant">Ask the product assistant</Link></div>
         <div className="heroProof"><span>Evidence before opinion</span><span>Human-controlled AI</span><span>Private tenant workspaces</span><span>International by design</span></div>
       </div>
 
@@ -103,8 +103,8 @@ export default function Home(){
     <section className="section softSection" id="pricing">
       <div className="sectionIntro"><div className="eyebrow">Simple launch pricing</div><h2>Start with a 14-day trial. Upgrade when the workspace proves its value.</h2><p>Pricing is shown in SAR for the Saudi launch profile. Checkout taxes are handled by the payment provider when billing is activated.</p></div>
       <div className="pricingGrid">
-        <article className="pricingCard"><span className="badge medium">Professional</span><h3>Focused contract teams</h3><div className="marketingPrice"><b>SAR 699</b><span>/ month</span></div><p>Pilot pricing hypothesis · limits validated through design partners.</p><Link className="btn primary" href="/sign-in">Start 14-day trial</Link></article>
-        <article className="pricingCard featured"><span className="badge high">Business</span><h3>Multi-project organizations</h3><div className="marketingPrice"><b>SAR 1,999</b><span>/ month</span></div><p>Pilot pricing hypothesis · multi-project controls and integration readiness.</p><Link className="btn primary" href="/sign-in">Start 14-day trial</Link></article>
+        <article className="pricingCard"><span className="badge medium">Professional</span><h3>Focused contract teams</h3><div className="marketingPrice"><b>SAR 699</b><span>/ month</span></div><p>Pilot pricing hypothesis · limits validated through design partners.</p><Link className="btn primary" href="/sign-up">Start 14-day trial</Link></article>
+        <article className="pricingCard featured"><span className="badge high">Business</span><h3>Multi-project organizations</h3><div className="marketingPrice"><b>SAR 1,999</b><span>/ month</span></div><p>Pilot pricing hypothesis · multi-project controls and integration readiness.</p><Link className="btn primary" href="/sign-up">Start 14-day trial</Link></article>
         <article className="pricingCard"><span className="badge neutral">Enterprise</span><h3>Portfolio & enterprise deployment</h3><div className="marketingPrice"><b>Custom</b><span>annual agreement</span></div><p>SSO, implementation, advanced permissions, integrations, security review and priority support.</p><Link className="btn" href="/assistant">Talk to the assistant</Link></article>
       </div>
     </section>
@@ -118,9 +118,9 @@ export default function Home(){
 
     <section className="finalCta">
       <div><div className="eyebrow">Start with one project</div><h2>Build a clearer contractual position from day one.</h2><p>Create the workspace, invite your team and bring the first contract or project record.</p></div>
-      <div className="heroButtons"><Link className="btn primary large" href="/sign-in">Create workspace</Link><Link className="btn darkOutline large" href="/sign-in">Sign in</Link></div>
+      <div className="heroButtons"><Link className="btn primary large" href="/sign-up">Create workspace</Link><Link className="btn darkOutline large" href="/sign-in">Sign in</Link></div>
     </section>
 
-    <footer className="marketingFooter"><div><b>WHAT IT IS / WHAT IT OUGHT TO BE</b><span>Contract Intelligence that turns gaps into action.</span></div><div><Link href="/assistant">Customer Assistant</Link><Link href="/sign-in">Sign in</Link><Link href="/sign-in">Create account</Link></div></footer>
+    <footer className="marketingFooter"><div><b>WHAT IT IS / WHAT IT OUGHT TO BE</b><span>Contract Intelligence that turns gaps into action.</span></div><div><Link href="/assistant">Customer Assistant</Link><Link href="/sign-in">Sign in</Link><Link href="/sign-up">Create account</Link></div></footer>
   </main>
 }
