@@ -2,35 +2,25 @@ name: Production CI
 
 on:
   push:
-    branches: ["main"]
-    paths:
-      - "production/**"
-      - ".github/workflows/production-ci.yml"
-  pull_request:
-    paths:
-      - "production/**"
-
-permissions:
-  contents: read
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: production
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
-          cache: "npm"
-          cache-dependency-path: production/package.json
       - name: Install
         run: npm install
+        working-directory: production
       - name: Typecheck
         run: npm run typecheck
+        working-directory: production
       - name: Build
         run: npm run build
+        working-directory: production
