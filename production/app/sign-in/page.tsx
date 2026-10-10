@@ -3,6 +3,7 @@
 import {FormEvent,useState} from "react";
 import Link from "next/link";
 import {createClient} from "@/lib/supabase/client";
+import {ChatGPTSignInButton} from "@/components/chatgpt-signin-button";
 
 export default function SignIn(){
   const [message,setMessage]=useState("");
@@ -32,6 +33,7 @@ export default function SignIn(){
       <div className="authFormBox"><div className="eyebrow">Welcome back</div><h2>Sign in to your workspace</h2><p className="muted">Continue managing your contractual position and team actions.</p>
         <form onSubmit={submit}><label>Work email</label><input name="email" type="email" autoComplete="email" placeholder="you@company.com" required/><label>Password</label><input name="password" type="password" autoComplete="current-password" placeholder="••••••••" required/><button className="btn primary authButton" type="submit" disabled={busy}>{busy?"Signing in…":"Sign in"}</button></form>
         {message&&<div className="notice" style={{marginTop:12}}>{message}</div>}
+        <ChatGPTSignInButton next="/dashboard"/>
         <div className="authDivider"><span>New to the platform?</span></div>
         <Link className="btn authButton" href="/sign-up">Create a new workspace</Link>
         <div className="footerNote"><Link href="/">← Back to product site</Link></div>
