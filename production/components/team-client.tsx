@@ -13,7 +13,11 @@ export function TeamClient({orgId,currentUserId,role,members:initial,invitations
   const supabase=createClient(); if(!supabase){setMessage("Service unavailable.");return}
   const {data,error}=await supabase.from("team_invitations").insert({organization_id:orgId,email,role:inviteRole,job_title:jobTitle||null,invited_by:currentUserId}).select("id,email,role,job_title,status,expires_at,created_at,token").single();
   if(error){setMessage(error.message);return}
-  setInvites([data as Invite,...invites]); const url=window.location.origin+"/join/"+data.token; setLink(url); (e.currentTarget as HTMLFormElement).reset();
+  setInvites([data as Invite,...invites]); const url=window.location.origin+"/join/"+data.token; setLink(url);
+  const mail=await fetch("/api/email/team-invitation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({invitationId:data.id})});
+  const mailData=await mail.json().catch(()=>({}));
+  setMessage(mail.ok?"Invitation created and email sent.":("Invitation created. Email delivery is pending: "+(mailData.error||"share the secure link below.")));
+  (e.currentTarget as HTMLFormElement).reset();
  }
  async function copy(){if(link){await navigator.clipboard.writeText(link);setMessage("Invite link copied.")}}
  return <div className="teamLayout">
