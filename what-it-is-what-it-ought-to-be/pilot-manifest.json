@@ -1,0 +1,19 @@
+{
+  "product": "What It Is / What It Ought to Be",
+  "edition": "International Pilot",
+  "version": "v0.1-international-pilot",
+  "markets": [
+    "Global / International",
+    "Saudi Arabia",
+    "United Arab Emirates",
+    "United Kingdom",
+    "United States",
+    "European Union",
+    "Other"
+  ],
+  "storage": "Browser localStorage",
+  "production_integrations_connected": false,
+  "github_repository": "starjabin/dev",
+  "repository_path": "what-it-is-what-it-ought-to-be",
+  "created_for": "rapid pilot validation"
+}
