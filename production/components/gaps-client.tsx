@@ -4,7 +4,7 @@ import Link from "next/link";
 import {createClient} from "@/lib/supabase/client";
 type Gap={id:string;project_id:string;contract_id:string|null;what_is:string;what_ought_to_be:string;why:string;gap:string;impact:string;action:string;owner_user_id:string|null;owner_label:string|null;deadline:string|null;status:string;severity:string;confidence:string|null;source_kind:string;created_at:string;reviewed_at:string|null};
 type Project={id:string;code:string;name:string};type Contract={id:string;project_id:string;contract_number:string|null;title:string};
-type Evidence={id:string;project_id:string|null;contract_id:string|null;document_id:string;source_locator:string;excerpt:string|null;evidence_kind:string;documents:{file_name:string}|null};
+type Evidence={id:string;project_id:string|null;contract_id:string|null;document_id:string;source_locator:string;excerpt:string|null;evidence_kind:string;documents:{file_name:string}[]|null};
 type Member={user_id:string;display_name:string|null;email:string|null;role:string};
 export function GapsClient({orgId,userId,gaps:initial,projects,contracts,evidence,members}:{orgId:string;userId:string;gaps:Gap[];projects:Project[];contracts:Contract[];evidence:Evidence[];members:Member[]}){
  const [gaps,setGaps]=useState(initial),[message,setMessage]=useState("");
@@ -23,7 +23,7 @@ export function GapsClient({orgId,userId,gaps:initial,projects,contracts,evidenc
   <label htmlFor="what-is">WHAT IT IS</label><textarea id="what-is" name="what_is" required/>
   <label htmlFor="what-ought">WHAT IT OUGHT TO BE</label><textarea id="what-ought" name="what_ought" required/>
   <label htmlFor="gap-why">WHY</label><textarea id="gap-why" name="why" required/>
-  <label htmlFor="gap-evidence">EVIDENCE</label><select id="gap-evidence" name="evidence" multiple size={5}>{evidence.map(ev=><option key={ev.id} value={ev.id}>{ev.documents?.file_name||"Source"} · {ev.source_locator}</option>)}</select>
+  <label htmlFor="gap-evidence">EVIDENCE</label><select id="gap-evidence" name="evidence" multiple size={5}>{evidence.map(ev=><option key={ev.id} value={ev.id}>{ev.documents?.[0]?.file_name||"Source"} · {ev.source_locator}</option>)}</select>
   <label htmlFor="gap-text">GAP</label><textarea id="gap-text" name="gap" required/>
   <label htmlFor="gap-impact">IMPACT</label><textarea id="gap-impact" name="impact" required/>
   <label htmlFor="gap-action">ACTION</label><textarea id="gap-action" name="action" required/>
