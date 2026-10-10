@@ -1,378 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>What It Is / What It Ought to Be — Pilot</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What It Is / What It Ought to Be</title>
 <style>
-:root{
-  --navy:#17324D;--blue:#2D6CDF;--ink:#192230;--muted:#667085;--line:#D8DEE8;
-  --bg:#F5F7FA;--card:#FFFFFF;--green:#16794B;--amber:#A56400;--red:#B42318;--purple:#6941C6;
-}
-*{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-.topbar{height:62px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
-.brand{font-weight:800;letter-spacing:.2px}.brand small{font-weight:500;opacity:.72;margin-left:8px}
-.shell{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 62px)}
-.sidebar{background:#fff;border-right:1px solid var(--line);padding:18px 12px}
-.nav{display:flex;flex-direction:column;gap:6px}.nav button{border:0;background:transparent;text-align:left;padding:10px 12px;border-radius:9px;color:var(--ink)}
-.nav button.active,.nav button:hover{background:#EAF1FB;color:var(--navy);font-weight:700}
-.content{padding:24px;max-width:1500px;width:100%}
-.page{display:none}.page.active{display:block}
-.hrow{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:18px}
-h1{font-size:28px;margin:0}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 10px}
-.sub{color:var(--muted);font-size:14px;margin-top:5px}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
-.metric strong{font-size:28px;display:block;margin-top:5px}.metric span{font-size:12px;color:var(--muted)}
-.badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
-.badge.red{background:#FEE4E2;color:var(--red)}.badge.amber{background:#FEF0C7;color:var(--amber)}
-.badge.green{background:#D1FADF;color:var(--green)}.badge.blue{background:#EAF1FB;color:var(--blue)}
-.badge.purple{background:#F4EBFF;color:var(--purple)}.badge.gray{background:#EAECF0;color:#344054}
-.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
-table{border-collapse:collapse;width:100%;min-width:760px}
-th,td{padding:11px 12px;text-align:left;border-bottom:1px solid #EAECF0;vertical-align:top;font-size:13px}
-th{background:#F8FAFC;color:#475467;position:sticky;top:0}
-td.actions{white-space:nowrap}
-.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 12px;border-radius:9px;font-weight:650}
-.btn.primary{background:var(--blue);border-color:var(--blue);color:white}.btn.danger{color:var(--red)}
-.btn.small{padding:6px 9px;font-size:12px}
-.formgrid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:12px}
-label{display:block;font-size:12px;font-weight:700;color:#475467;margin-bottom:6px}
-input,select,textarea{width:100%;border:1px solid #C9D2DE;border-radius:9px;padding:10px;background:#fff;color:var(--ink)}
-textarea{min-height:84px;resize:vertical}
-.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.panel{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:14px}
-.gapfield{border-left:4px solid var(--blue);padding-left:12px;margin:12px 0}.gapfield .k{font-size:11px;font-weight:800;color:#667085;text-transform:uppercase;letter-spacing:.05em}.gapfield .v{margin-top:3px}
-.notice{border-radius:10px;padding:11px 13px;background:#EFF8FF;color:#175CD3;font-size:13px;border:1px solid #B2DDFF}
-.warn{background:#FFFAEB;color:#B54708;border-color:#FEDF89}
-.dangerbox{background:#FEF3F2;color:#B42318;border-color:#FECDCA}
-.empty{text-align:center;padding:38px;color:#667085}
-.modalback{position:fixed;inset:0;background:rgba(16,24,40,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
-.modalback.show{display:flex}.modal{background:#fff;border-radius:14px;width:min(860px,100%);max-height:92vh;overflow:auto;padding:18px}
-.modalhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}
-hr{border:0;border-top:1px solid #EAECF0;margin:18px 0}
-footer{color:#98A2B3;font-size:12px;margin-top:28px;padding:10px 0}
-.pillbar{display:flex;gap:6px;flex-wrap:wrap}.pill{padding:6px 9px;border-radius:999px;background:#F2F4F7;font-size:12px}
-.statusdot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--green)}
-.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--blue)}
-.top-controls{display:flex;gap:8px;align-items:center}.top-controls select{width:auto;min-width:160px;padding:7px 9px}
-@media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.panel{grid-template-columns:1fr}.shell{grid-template-columns:190px 1fr}}
-@media(max-width:720px){.shell{grid-template-columns:1fr}.sidebar{position:static;border-right:0;border-bottom:1px solid var(--line)}.nav{flex-direction:row;overflow:auto}.nav button{white-space:nowrap}.grid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.content{padding:14px}.brand small{display:none}}
+:root{--bg:#f5f7fa;--surface:#fff;--surface-2:#f8fafc;--ink:#0f172a;--muted:#667085;--line:#e4e7ec;--brand:#17324d;--brand-2:#255b85;--accent:#2f6fed;--accent-soft:#eef4ff;--success:#087a55;--success-soft:#ecfdf3;--warning:#b54708;--warning-soft:#fffaeb;--danger:#b42318;--danger-soft:#fff1f0;--purple:#6941c6;--purple-soft:#f4f3ff;--shadow:0 1px 2px rgba(16,24,40,.04),0 4px 12px rgba(16,24,40,.04)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{font-size:14px}button,input,select,textarea{font:inherit}button{cursor:pointer}
+.app{display:grid;grid-template-columns:264px 1fr;min-height:100vh}.sidebar{background:#102a43;color:#d9e2ec;padding:18px 14px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}.logo{display:flex;gap:11px;align-items:center;padding:5px 7px 19px}.logo-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#3a7bd5,#1d4e78);display:grid;place-items:center;color:white;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}.logo strong{display:block;color:#fff;font-size:14px;line-height:1.2}.logo small{display:block;color:#9fb3c8;margin-top:4px;font-size:11px}.workspace{background:#173b5c;border:1px solid rgba(255,255,255,.08);padding:11px;border-radius:11px;margin-bottom:16px}.workspace small{display:block;color:#9fb3c8;font-size:10px;text-transform:uppercase;letter-spacing:.08em}.workspace strong{display:flex;justify-content:space-between;align-items:center;color:white;margin-top:4px;font-size:13px}.nav-section{margin:8px 6px 6px;color:#7f9db8;font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:800}.nav{display:flex;flex-direction:column;gap:4px}.nav button{border:0;background:transparent;color:#c9d7e5;display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 11px;border-radius:9px}.nav button:hover{background:#173b5c;color:white}.nav button.active{background:#214d71;color:white;font-weight:700}.ico{width:23px;height:23px;border:1px solid rgba(255,255,255,.11);border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:800}.sidebar-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}.sidebar-note{font-size:11px;color:#8eabc2;line-height:1.5;padding:7px}
+.main{min-width:0}.topbar{height:68px;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:20}.search{display:flex;align-items:center;gap:9px;min-width:340px;border:1px solid #d0d5dd;background:white;border-radius:10px;padding:9px 11px;color:#98a2b3}.search input{border:0;outline:0;width:100%;padding:0;background:transparent;color:var(--ink)}.top-actions{display:flex;gap:9px;align-items:center}.avatar{width:34px;height:34px;border-radius:50%;background:#eaf0f6;color:#17324d;display:grid;place-items:center;font-weight:800;border:1px solid #d7e0e8}.content{padding:24px 28px 36px;max-width:1540px;margin:0 auto}.page{display:none}.page.active{display:block}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:800}.hrow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}h1{font-size:29px;letter-spacing:-.03em;margin:4px 0 5px}h2{font-size:18px;letter-spacing:-.01em;margin:0}h3{font-size:14px;margin:0}.sub{color:var(--muted);font-size:13px;line-height:1.45}
+.btn{border:1px solid #d0d5dd;background:#fff;color:#344054;padding:9px 12px;border-radius:9px;font-weight:700;box-shadow:0 1px 2px rgba(16,24,40,.03)}.btn:hover{background:#f9fafb}.btn.primary{border-color:var(--accent);background:var(--accent);color:white}.btn.primary:hover{background:#235fcf}.btn.ghost{border-color:transparent;box-shadow:none;background:transparent}.btn.small{padding:6px 9px;font-size:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:13px}.kpi{background:white;border:1px solid var(--line);border-radius:13px;padding:16px;box-shadow:var(--shadow)}.kpi-top{display:flex;justify-content:space-between;gap:8px;align-items:center;color:#667085;font-size:12px}.kpi strong{font-size:29px;letter-spacing:-.03em;display:block;margin-top:8px}.delta{font-size:11px;font-weight:800;border-radius:999px;padding:4px 7px;background:#f2f4f7;color:#475467}.delta.danger{background:var(--danger-soft);color:var(--danger)}.delta.good{background:var(--success-soft);color:var(--success)}
+.panel-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);gap:14px;margin-top:14px}.card{background:white;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}.card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:15px 16px;border-bottom:1px solid var(--line)}.card-body{padding:15px 16px}.attn-item{display:grid;grid-template-columns:36px 1fr auto;gap:11px;align-items:start;padding:12px 0;border-bottom:1px solid #eef2f6}.attn-item:last-child{border:0}.risk-dot{width:33px;height:33px;border-radius:9px;background:var(--danger-soft);display:grid;place-items:center;color:var(--danger);font-weight:900}.attn-title{font-weight:750;line-height:1.35}.meta{font-size:11px;color:#98a2b3;margin-top:5px}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;white-space:nowrap}.badge.red{background:var(--danger-soft);color:var(--danger)}.badge.amber{background:var(--warning-soft);color:var(--warning)}.badge.blue{background:var(--accent-soft);color:var(--accent)}.badge.green{background:var(--success-soft);color:var(--success)}.badge.gray{background:#f2f4f7;color:#475467}.badge.purple{background:var(--purple-soft);color:var(--purple)}
+.deadline{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid #eef2f6}.deadline:last-child{border:0}.datebox{width:46px;height:46px;border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;background:#fafafa;flex:0 0 auto}.datebox b{font-size:15px}.datebox span{font-size:9px;color:#98a2b3;text-transform:uppercase}.barrow{display:grid;grid-template-columns:90px 1fr 32px;gap:9px;align-items:center;margin:11px 0}.bar{height:8px;background:#eef2f6;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#2f6fed,#75a2ff);border-radius:99px}
+.table-card{background:white;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}.table-tools{display:flex;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}.table-tools input,.table-tools select{border:1px solid #d0d5dd;border-radius:8px;padding:8px 9px;background:#fff;color:#344054}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:820px}th{padding:10px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#667085;text-align:left;white-space:nowrap}td{padding:12px 13px;border-bottom:1px solid #eef2f6;vertical-align:top;font-size:12.5px}tr:hover td{background:#fcfdff}.record-title{font-weight:760;color:#101828;line-height:1.35}.record-sub{font-size:11px;color:#98a2b3;margin-top:4px}
+.project-grid{display:grid;grid-template-columns:repeat(3,minmax(240px,1fr));gap:14px}.project-card{padding:16px;border:1px solid var(--line);background:white;border-radius:13px;box-shadow:var(--shadow);position:relative;overflow:hidden}.project-card:before{content:"";height:3px;position:absolute;inset:0 0 auto;background:linear-gradient(90deg,#17324d,#3b82f6)}.project-top{display:flex;justify-content:space-between;gap:8px}.project-card h3{font-size:15px;margin-top:5px}.project-card .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px}.mini{background:#f8fafc;border:1px solid #eef2f6;border-radius:9px;padding:9px}.mini b{display:block;font-size:16px}.mini span{font-size:10px;color:#98a2b3}
+.workspace-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px}.timeline{position:relative;padding-left:20px}.timeline:before{content:"";position:absolute;left:6px;top:3px;bottom:3px;width:1px;background:#d0d5dd}.event{position:relative;margin:0 0 18px}.event:before{content:"";position:absolute;left:-18px;top:3px;width:9px;height:9px;border-radius:50%;background:#2f6fed;border:2px solid white;box-shadow:0 0 0 1px #aac4f7}.event b{font-size:12px}.event p{margin:4px 0 0;color:#667085;font-size:11px;line-height:1.45}
+.action-list .action{padding:12px 0;border-bottom:1px solid #eef2f6;display:flex;gap:10px;align-items:flex-start}.action:last-child{border:0}.check{width:18px;height:18px;border:1px solid #cfd6df;border-radius:5px;flex:0 0 auto;margin-top:1px}.check.done{background:var(--success);border-color:var(--success);position:relative}.check.done:after{content:"✓";color:white;position:absolute;font-size:11px;left:3px;top:0px}
+.notice{border:1px solid #b2ddff;background:#eff8ff;color:#175cd3;padding:11px 13px;border-radius:10px;font-size:12px;line-height:1.45}.notice.warn{border-color:#fedf89;background:#fffaeb;color:#b54708}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:11px}label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#667085;font-weight:800;margin-bottom:6px}input,select,textarea{width:100%;border:1px solid #d0d5dd;background:white;color:#101828;border-radius:9px;padding:9px 10px;outline:none}input:focus,select:focus,textarea:focus{border-color:#84adff;box-shadow:0 0 0 3px #eef4ff}textarea{min-height:82px;resize:vertical}
+.modalback{position:fixed;inset:0;background:rgba(16,24,40,.55);display:none;align-items:center;justify-content:center;padding:24px;z-index:100}.modalback.show{display:flex}.modal{background:white;border-radius:15px;width:min(900px,100%);max-height:92vh;overflow:auto;box-shadow:0 24px 48px rgba(16,24,40,.18)}.modal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}.modal-body{padding:17px 18px}.modal-foot{padding:14px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.gap-section{padding:14px 16px;border-bottom:1px solid #eef2f6}.gap-section:last-child{border:0}.gap-label{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#667085;font-weight:800}.gap-value{font-size:13px;line-height:1.55;margin-top:5px}.report-hero{background:linear-gradient(135deg,#102a43,#214d71);color:white;padding:22px;border-radius:14px;margin-bottom:14px}.report-hero .sub{color:#c9d7e5}.report-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:17px}.report-stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);padding:12px;border-radius:10px}.report-stat b{font-size:22px;display:block}.report-stat span{font-size:10px;color:#c9d7e5}
+.assistant-shell{display:grid;grid-template-columns:290px 1fr;gap:14px}.assistant-panel{min-height:560px}.prompt-examples{display:grid;gap:8px}.prompt{padding:11px;border:1px solid var(--line);border-radius:9px;font-size:12px;background:#fafafa}.chat-empty{height:460px;display:grid;place-items:center;text-align:center;color:#667085}.chat-mark{width:52px;height:52px;border-radius:15px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:900;margin:0 auto 12px}.empty{padding:34px;text-align:center;color:#667085}
+@media(max-width:1180px){.grid4{grid-template-columns:repeat(2,1fr)}.project-grid{grid-template-columns:repeat(2,1fr)}.panel-grid,.workspace-layout{grid-template-columns:1fr}.assistant-shell{grid-template-columns:1fr}}@media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{height:auto;position:static}.nav{display:grid;grid-template-columns:repeat(4,1fr)}.nav-section,.workspace,.sidebar-bottom{display:none}.topbar{position:static;padding:0 14px}.search{min-width:0;flex:1}.content{padding:18px 14px}.grid4,.project-grid,.report-grid{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}}@media(max-width:520px){.nav{grid-template-columns:repeat(2,1fr)}.grid4,.project-grid,.report-grid{grid-template-columns:1fr}.top-actions .avatar{display:none}}
 </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">WHAT IT IS / WHAT IT OUGHT TO BE <small>International Pilot</small></div>
-  <div class="top-controls">
-    <span id="saveState"><span class="statusdot"></span>Saved locally</span>
-    <select id="marketSelect" title="Market"></select>
-  </div>
-</header>
-<div class="shell">
-  <aside class="sidebar">
-    <div class="nav" id="nav">
-      <button data-page="dashboard" class="active">Dashboard</button>
-      <button data-page="projects">Projects</button>
-      <button data-page="contracts">Contracts</button>
-      <button data-page="documents">Documents</button>
-      <button data-page="gaps">Gap Register</button>
-      <button data-page="actions">Actions</button>
-      <button data-page="reports">Reports</button>
-      <button data-page="settings">Settings</button>
-    </div>
-  </aside>
-  <main class="content">
-    <section class="page active" id="page-dashboard">
-      <div class="hrow"><div><div class="kicker">Pilot workspace</div><h1>Executive Dashboard</h1><div class="sub">Evidence → Position → Gap → Impact → Action → Outcome</div></div><button class="btn primary" onclick="openGapModal()">+ New Gap</button></div>
-      <div class="notice">This is a runnable pilot instance. Data is stored only in this browser. AI, payment processing, external integrations and cloud storage are intentionally not connected in this rapid pilot.</div>
-      <div class="grid" style="margin-top:14px" id="metrics"></div>
-      <div class="panel" style="margin-top:14px">
-        <div class="card"><h2>Critical & High Gaps</h2><div id="dashboardGaps"></div></div>
-        <div class="card"><h2>Due Soon</h2><div id="dashboardActions"></div></div>
-      </div>
-    </section>
-
-    <section class="page" id="page-projects">
-      <div class="hrow"><div><h1>Projects</h1><div class="sub">International portfolio with market-specific settings.</div></div><button class="btn primary" onclick="openProjectModal()">+ Project</button></div>
-      <div id="projectsTable"></div>
-    </section>
-
-    <section class="page" id="page-contracts">
-      <div class="hrow"><div><h1>Contracts</h1><div class="sub">Contract master data and commercial context.</div></div><button class="btn primary" onclick="openContractModal()">+ Contract</button></div>
-      <div id="contractsTable"></div>
-    </section>
-
-    <section class="page" id="page-documents">
-      <div class="hrow"><div><h1>Documents</h1><div class="sub">Register project evidence and contract files.</div></div><label class="btn primary" style="display:inline-block;margin:0">+ Add files<input id="docUpload" type="file" multiple style="display:none"></label></div>
-      <div class="notice warn" style="margin-bottom:14px">Pilot mode records file metadata only. Production will use encrypted object storage, malware scanning, OCR/parsing, version control and source anchors.</div>
-      <div id="documentsTable"></div>
-    </section>
-
-    <section class="page" id="page-gaps">
-      <div class="hrow"><div><h1>Gap Register</h1><div class="sub">The core commercial intelligence record.</div></div><div class="toolbar"><select id="gapSeverityFilter" onchange="renderGaps()"><option value="">All severities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select><button class="btn primary" onclick="openGapModal()">+ Gap</button></div></div>
-      <div id="gapsTable"></div>
-    </section>
-
-    <section class="page" id="page-actions">
-      <div class="hrow"><div><h1>Actions</h1><div class="sub">Convert findings into accountable work.</div></div><button class="btn primary" onclick="openActionModal()">+ Action</button></div>
-      <div id="actionsTable"></div>
-    </section>
-
-    <section class="page" id="page-reports">
-      <div class="hrow"><div><h1>Reports</h1><div class="sub">Management-ready output from structured records.</div></div><button class="btn primary" onclick="printReport()">Print / Save PDF</button></div>
-      <div class="card" id="reportCard"></div>
-    </section>
-
-    <section class="page" id="page-settings">
-      <div class="hrow"><div><h1>Settings</h1><div class="sub">International defaults with Saudi Arabia included as a market profile.</div></div></div>
-      <div class="panel">
-        <div class="card">
-          <h2>Organization</h2>
-          <div class="formgrid">
-            <div><label>Organization</label><input id="setOrg"></div>
-            <div><label>Default market</label><select id="setMarket"></select></div>
-            <div><label>Default currency</label><select id="setCurrency"><option>USD</option><option>SAR</option><option>AED</option><option>GBP</option><option>EUR</option></select></div>
-            <div><label>Language</label><select id="setLanguage"><option>English</option><option>Arabic</option></select></div>
-          </div>
-          <div class="toolbar" style="margin-top:14px"><button class="btn primary" onclick="saveSettings()">Save settings</button><button class="btn danger" onclick="resetDemo()">Reset pilot data</button></div>
-        </div>
-        <div class="card">
-          <h2>Production integrations</h2>
-          <div class="pillbar"><span class="pill">OpenAI Responses API</span><span class="pill">Object Storage</span><span class="pill">PostgreSQL</span><span class="pill">Billing</span><span class="pill">Email / Outlook</span><span class="pill">SharePoint</span><span class="pill">Primavera P6</span></div>
-          <hr>
-          <div class="notice">Sign in with ChatGPT remains optional and outside the critical path. Native product identity and backend AI orchestration are the primary launch architecture.</div>
-        </div>
-      </div>
-    </section>
-    <footer>International pilot instance • Browser-local data • Saudi Arabia included, not exclusive</footer>
-  </main>
+<div class="app">
+<aside class="sidebar">
+<div class="logo"><div class="logo-mark">W</div><div><strong>WHAT IT IS</strong><small>WHAT IT OUGHT TO BE</small></div></div>
+<div class="workspace"><small>Workspace</small><strong><span id="workspaceName">International Pilot</span><span>⌄</span></strong></div>
+<div class="nav-section">Workspace</div>
+<div class="nav" id="nav">
+<button class="active" data-page="dashboard"><span class="ico">DB</span>Dashboard</button><button data-page="projects"><span class="ico">PJ</span>Projects</button><button data-page="contracts"><span class="ico">CT</span>Contracts</button><button data-page="gaps"><span class="ico">GP</span>Gap Register</button><button data-page="actions"><span class="ico">AC</span>Actions</button><button data-page="documents"><span class="ico">EV</span>Evidence</button><button data-page="assistant"><span class="ico">AI</span>AI Analyst</button><button data-page="reports"><span class="ico">RP</span>Reports</button>
 </div>
-
-<div class="modalback" id="projectModal"><div class="modal">
-  <div class="modalhead"><h2>New Project</h2><button class="btn" onclick="closeModal('projectModal')">Close</button></div>
-  <div class="formgrid">
-    <div><label>Project name</label><input id="pName"></div><div><label>Project code</label><input id="pCode"></div>
-    <div><label>Market</label><select id="pMarket"></select></div><div><label>Currency</label><select id="pCurrency"><option>USD</option><option>SAR</option><option>AED</option><option>GBP</option><option>EUR</option></select></div>
-  </div><div class="toolbar" style="margin-top:14px"><button class="btn primary" onclick="addProject()">Create project</button></div>
-</div></div>
-
-<div class="modalback" id="contractModal"><div class="modal">
-  <div class="modalhead"><h2>New Contract</h2><button class="btn" onclick="closeModal('contractModal')">Close</button></div>
-  <div class="formgrid">
-    <div><label>Project</label><select id="cProject"></select></div><div><label>Contract title</label><input id="cTitle"></div>
-    <div><label>Contract number</label><input id="cNumber"></div><div><label>Counterparty</label><input id="cParty"></div>
-    <div><label>Value</label><input id="cValue" type="number" min="0" step="0.01"></div><div><label>Currency</label><select id="cCurrency"><option>USD</option><option>SAR</option><option>AED</option><option>GBP</option><option>EUR</option></select></div>
-  </div><div class="toolbar" style="margin-top:14px"><button class="btn primary" onclick="addContract()">Create contract</button></div>
-</div></div>
-
-<div class="modalback" id="gapModal"><div class="modal">
-  <div class="modalhead"><h2 id="gapModalTitle">New Gap</h2><button class="btn" onclick="closeModal('gapModal')">Close</button></div>
-  <input type="hidden" id="gId">
-  <div class="formgrid">
-    <div><label>Project</label><select id="gProject"></select></div><div><label>Contract</label><select id="gContract"></select></div>
-    <div><label>Severity</label><select id="gSeverity"><option>Critical</option><option>High</option><option selected>Medium</option><option>Low</option></select></div>
-    <div><label>Status</label><select id="gStatus"><option>Detected</option><option>Under Review</option><option>Confirmed</option><option>Action Required</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select></div>
-  </div>
-  <hr>
-  <div class="formgrid">
-    <div><label>WHAT IT IS</label><textarea id="gIs"></textarea></div>
-    <div><label>WHAT IT OUGHT TO BE</label><textarea id="gOught"></textarea></div>
-    <div><label>WHY</label><textarea id="gWhy"></textarea></div>
-    <div><label>EVIDENCE</label><textarea id="gEvidence" placeholder="Document/record references"></textarea></div>
-    <div><label>GAP</label><textarea id="gGap"></textarea></div>
-    <div><label>IMPACT</label><textarea id="gImpact"></textarea></div>
-    <div><label>ACTION</label><textarea id="gAction"></textarea></div>
-    <div><label>OWNER</label><input id="gOwner"></div>
-    <div><label>DEADLINE</label><input id="gDeadline" type="date"></div>
-  </div>
-  <div class="toolbar" style="margin-top:14px"><button class="btn primary" onclick="saveGap()">Save Gap</button></div>
-</div></div>
-
-<div class="modalback" id="gapViewModal"><div class="modal">
-  <div class="modalhead"><div><div class="kicker">Gap record</div><h2 id="gvTitle">Gap</h2></div><button class="btn" onclick="closeModal('gapViewModal')">Close</button></div>
-  <div id="gapView"></div>
-</div></div>
-
-<div class="modalback" id="actionModal"><div class="modal">
-  <div class="modalhead"><h2>New Action</h2><button class="btn" onclick="closeModal('actionModal')">Close</button></div>
-  <div class="formgrid">
-    <div><label>Related Gap</label><select id="aGap"></select></div><div><label>Owner</label><input id="aOwner"></div>
-    <div><label>Due date</label><input id="aDue" type="date"></div><div><label>Status</label><select id="aStatus"><option>Open</option><option>In Progress</option><option>Blocked</option><option>Done</option></select></div>
-    <div style="grid-column:1/-1"><label>Action</label><textarea id="aText"></textarea></div>
-  </div><div class="toolbar" style="margin-top:14px"><button class="btn primary" onclick="addAction()">Create action</button></div>
-</div></div>
-
+<div class="nav-section">Administration</div><div class="nav"><button data-page="settings"><span class="ico">ST</span>Settings</button></div>
+<div class="sidebar-bottom"><div class="sidebar-note"><b style="color:white">International edition</b><br>Saudi Arabia included as a market profile. Production compliance controls activate by market.</div></div>
+</aside>
+<main class="main">
+<header class="topbar"><div class="search"><span>⌕</span><input id="globalSearch" placeholder="Search projects, contracts, gaps, evidence…"></div><div class="top-actions"><select id="marketSelect" style="width:auto;min-width:170px"></select><button class="btn primary" onclick="openGapModal()">+ New Gap</button><div class="avatar">A</div></div></header>
+<div class="content">
+<section class="page active" id="page-dashboard">
+<div class="hrow"><div><div class="eyebrow">Portfolio intelligence</div><h1>Executive Dashboard</h1><div class="sub">Know the position. See the gap. Protect the outcome.</div></div><div><button class="btn" onclick="showPage('reports')">View executive report</button></div></div>
+<div class="grid4" id="kpis"></div>
+<div class="panel-grid"><div class="card"><div class="card-head"><div><h2>Attention required</h2><div class="sub">Material issues ranked by severity and time sensitivity.</div></div><button class="btn ghost small" onclick="showPage('gaps')">Open register →</button></div><div class="card-body" id="attentionList"></div></div><div class="card"><div class="card-head"><div><h2>Upcoming deadlines</h2><div class="sub">Next accountable dates.</div></div></div><div class="card-body" id="deadlineList"></div></div></div>
+<div class="panel-grid"><div class="card"><div class="card-head"><div><h2>Risk distribution</h2><div class="sub">Open gaps by severity.</div></div></div><div class="card-body" id="riskBars"></div></div><div class="card"><div class="card-head"><div><h2>Evidence coverage</h2><div class="sub">How well material findings are supported.</div></div></div><div class="card-body" id="evidenceCoverage"></div></div></div>
+</section>
+<section class="page" id="page-projects"><div class="hrow"><div><div class="eyebrow">Portfolio</div><h1>Projects</h1><div class="sub">Commercial and contractual intelligence across your active portfolio.</div></div><button class="btn primary" onclick="openProjectModal()">+ New project</button></div><div class="project-grid" id="projectGrid"></div></section>
+<section class="page" id="page-contracts"><div class="hrow"><div><div class="eyebrow">Contract workspace</div><h1>Contracts</h1><div class="sub">Master data, commercial position, evidence and obligations in one place.</div></div><button class="btn primary" onclick="openContractModal()">+ New contract</button></div><div class="workspace-layout"><div class="card"><div class="card-head"><h2>Contract portfolio</h2><span class="badge blue">Live workspace</span></div><div class="card-body" id="contractsTable"></div></div><div class="card"><div class="card-head"><h2>Activity</h2></div><div class="card-body"><div class="timeline" id="activityTimeline"></div></div></div></div></section>
+<section class="page" id="page-gaps"><div class="hrow"><div><div class="eyebrow">Core intelligence</div><h1>Gap Register</h1><div class="sub">Structured findings connecting evidence to accountable action.</div></div><button class="btn primary" onclick="openGapModal()">+ New gap</button></div><div class="table-card"><div class="table-tools"><input id="gapSearch" placeholder="Search gaps…" oninput="renderGaps()" style="min-width:240px"><select id="gapSeverity" onchange="renderGaps()"><option value="">All severities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select><select id="gapStatus" onchange="renderGaps()"><option value="">All statuses</option><option>Detected</option><option>Under Review</option><option>Confirmed</option><option>Action Required</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select></div><div class="table-wrap" id="gapsTable"></div></div></section>
+<section class="page" id="page-actions"><div class="hrow"><div><div class="eyebrow">Accountability</div><h1>Actions</h1><div class="sub">Convert findings into owned, time-bound commercial work.</div></div><button class="btn primary" onclick="openActionModal()">+ New action</button></div><div class="card"><div class="card-head"><h2>Action register</h2><span class="badge purple" id="openActionCount"></span></div><div class="card-body action-list" id="actionList"></div></div></section>
+<section class="page" id="page-documents"><div class="hrow"><div><div class="eyebrow">Evidence</div><h1>Evidence Library</h1><div class="sub">Source records supporting or contradicting the contractual position.</div></div><label class="btn primary" style="margin:0">+ Add evidence<input id="docUpload" type="file" multiple style="display:none"></label></div><div class="notice warn" style="margin-bottom:14px">Pilot mode stores only file metadata in this browser. Production will use encrypted object storage, malware scanning, OCR/parsing, immutable versions and source anchors.</div><div class="table-card"><div class="table-wrap" id="documentsTable"></div></div></section>
+<section class="page" id="page-assistant"><div class="hrow"><div><div class="eyebrow">Grounded intelligence</div><h1>AI Analyst</h1><div class="sub">Ask questions against project evidence; material outputs require human review.</div></div><span class="badge amber">Pilot — AI not connected</span></div><div class="assistant-shell"><div class="card"><div class="card-head"><h2>Suggested questions</h2></div><div class="card-body prompt-examples"><div class="prompt">What notices are approaching their contractual time bar?</div><div class="prompt">Show gaps with weak or missing evidence.</div><div class="prompt">Which obligations are overdue or unassigned?</div><div class="prompt">Summarize the commercial exposure for Project RCP-01.</div><div class="prompt">Draft an evidence request for the most critical gap.</div></div></div><div class="card assistant-panel"><div class="card-head"><h2>Project intelligence assistant</h2><span class="badge gray">Grounded only</span></div><div class="card-body"><div class="chat-empty"><div><div class="chat-mark">AI</div><h2 style="margin-bottom:6px">Connect evidence before opinion</h2><div class="sub" style="max-width:430px">The production assistant will answer with conclusion, source, evidence, uncertainty, missing information and suggested action. This pilot intentionally does not simulate live AI.</div></div></div></div></div></div></section>
+<section class="page" id="page-reports"><div class="hrow"><div><div class="eyebrow">Decision support</div><h1>Executive Report</h1><div class="sub">A management-ready view of position, exposure and required action.</div></div><button class="btn primary" onclick="window.print()">Print / Save PDF</button></div><div id="reportView"></div></section>
+<section class="page" id="page-settings"><div class="hrow"><div><div class="eyebrow">Administration</div><h1>Workspace Settings</h1><div class="sub">International defaults with market-specific controls.</div></div></div><div class="panel-grid"><div class="card"><div class="card-head"><h2>Organization</h2></div><div class="card-body"><div class="form-grid"><div><label>Organization</label><input id="setOrg"></div><div><label>Default market</label><select id="setMarket"></select></div><div><label>Default currency</label><select id="setCurrency"><option>USD</option><option>SAR</option><option>AED</option><option>GBP</option><option>EUR</option></select></div><div><label>Language</label><select id="setLanguage"><option>English</option><option>Arabic</option></select></div></div><div style="margin-top:14px;display:flex;gap:8px"><button class="btn primary" onclick="saveSettings()">Save settings</button><button class="btn" onclick="resetDemo()">Reset pilot data</button></div></div></div><div class="card"><div class="card-head"><h2>Production readiness</h2></div><div class="card-body"><div class="action-list"><div class="action"><div class="check done"></div><div><b>International data model</b><div class="sub">Market and currency are configurable.</div></div></div><div class="action"><div class="check"></div><div><b>Identity & tenancy</b><div class="sub">Native auth, RBAC and tenant isolation.</div></div></div><div class="action"><div class="check"></div><div><b>AI orchestration</b><div class="sub">Grounded retrieval, citations, evals and model routing.</div></div></div><div class="action"><div class="check"></div><div><b>Billing</b><div class="sub">Subscriptions, entitlements, tax and dunning.</div></div></div><div class="action"><div class="check"></div><div><b>Saudi launch pack</b><div class="sub">Arabic/RTL, PDPL, VAT/e-invoicing and local payment readiness.</div></div></div></div></div></div></div></section>
+</div></main></div>
+<div class="modalback" id="projectModal"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Portfolio</div><h2>New project</h2></div><button class="btn ghost" onclick="closeModal('projectModal')">✕</button></div><div class="modal-body"><div class="form-grid"><div><label>Project name</label><input id="pName"></div><div><label>Project code</label><input id="pCode"></div><div><label>Market</label><select id="pMarket"></select></div><div><label>Currency</label><select id="pCurrency"><option>USD</option><option>SAR</option><option>AED</option><option>GBP</option><option>EUR</option></select></div></div></div><div class="modal-foot"><button class="btn" onclick="closeModal('projectModal')">Cancel</button><button class="btn primary" onclick="addProject()">Create project</button></div></div></div>
+<div class="modalback" id="contractModal"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Contract workspace</div><h2>New contract</h2></div><button class="btn ghost" onclick="closeModal('contractModal')">✕</button></div><div class="modal-body"><div class="form-grid"><div><label>Project</label><select id="cProject"></select></div><div><label>Contract title</label><input id="cTitle"></div><div><label>Contract number</label><input id="cNumber"></div><div><label>Counterparty</label><input id="cParty"></div><div><label>Contract value</label><input id="cValue" type="number" min="0" step="0.01"></div><div><label>Currency</label><select id="cCurrency"><option>USD</option><option>SAR</option><option>AED</option><option>GBP</option><option>EUR</option></select></div></div></div><div class="modal-foot"><button class="btn" onclick="closeModal('contractModal')">Cancel</button><button class="btn primary" onclick="addContract()">Create contract</button></div></div></div>
+<div class="modalback" id="gapModal"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Gap Engine</div><h2 id="gapModalTitle">New gap</h2></div><button class="btn ghost" onclick="closeModal('gapModal')">✕</button></div><div class="modal-body"><input type="hidden" id="gId"><div class="form-grid"><div><label>Project</label><select id="gProject"></select></div><div><label>Contract</label><select id="gContract"></select></div><div><label>Severity</label><select id="gSeverity"><option>Critical</option><option>High</option><option selected>Medium</option><option>Low</option></select></div><div><label>Status</label><select id="gStatus"><option>Detected</option><option>Under Review</option><option>Confirmed</option><option>Action Required</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select></div><div><label>WHAT IT IS</label><textarea id="gIs"></textarea></div><div><label>WHAT IT OUGHT TO BE</label><textarea id="gOught"></textarea></div><div><label>WHY</label><textarea id="gWhy"></textarea></div><div><label>EVIDENCE</label><textarea id="gEvidence"></textarea></div><div><label>GAP</label><textarea id="gGap"></textarea></div><div><label>IMPACT</label><textarea id="gImpact"></textarea></div><div><label>ACTION</label><textarea id="gAction"></textarea></div><div><label>OWNER</label><input id="gOwner"></div><div><label>DEADLINE</label><input id="gDeadline" type="date"></div></div></div><div class="modal-foot"><button class="btn" onclick="closeModal('gapModal')">Cancel</button><button class="btn primary" onclick="saveGap()">Save gap</button></div></div></div>
+<div class="modalback" id="gapViewModal"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Gap record</div><h2 id="gvTitle"></h2></div><button class="btn ghost" onclick="closeModal('gapViewModal')">✕</button></div><div class="modal-body"><div id="gapView"></div></div></div></div>
+<div class="modalback" id="actionModal"><div class="modal"><div class="modal-head"><div><div class="eyebrow">Accountability</div><h2>New action</h2></div><button class="btn ghost" onclick="closeModal('actionModal')">✕</button></div><div class="modal-body"><div class="form-grid"><div><label>Related gap</label><select id="aGap"></select></div><div><label>Owner</label><input id="aOwner"></div><div><label>Due date</label><input id="aDue" type="date"></div><div><label>Status</label><select id="aStatus"><option>Open</option><option>In Progress</option><option>Blocked</option><option>Done</option></select></div><div style="grid-column:1/-1"><label>Action</label><textarea id="aText"></textarea></div></div></div><div class="modal-foot"><button class="btn" onclick="closeModal('actionModal')">Cancel</button><button class="btn primary" onclick="addAction()">Create action</button></div></div></div>
 <script>
-const pName=document.getElementById("pName"), pCode=document.getElementById("pCode"), pMarket=document.getElementById("pMarket"), pCurrency=document.getElementById("pCurrency");
-const cProject=document.getElementById("cProject"), cTitle=document.getElementById("cTitle"), cNumber=document.getElementById("cNumber"), cParty=document.getElementById("cParty"), cValue=document.getElementById("cValue"), cCurrency=document.getElementById("cCurrency");
-const gId=document.getElementById("gId"), gProject=document.getElementById("gProject"), gContract=document.getElementById("gContract"), gSeverity=document.getElementById("gSeverity"), gStatus=document.getElementById("gStatus"), gIs=document.getElementById("gIs"), gOught=document.getElementById("gOught"), gWhy=document.getElementById("gWhy"), gEvidence=document.getElementById("gEvidence"), gGap=document.getElementById("gGap"), gImpact=document.getElementById("gImpact"), gAction=document.getElementById("gAction"), gOwner=document.getElementById("gOwner"), gDeadline=document.getElementById("gDeadline"), gapModalTitle=document.getElementById("gapModalTitle");
-const gvTitle=document.getElementById("gvTitle"), gapView=document.getElementById("gapView"), aGap=document.getElementById("aGap"), aOwner=document.getElementById("aOwner"), aDue=document.getElementById("aDue"), aStatus=document.getElementById("aStatus"), aText=document.getElementById("aText");
-const setOrg=document.getElementById("setOrg"), setMarket=document.getElementById("setMarket"), setCurrency=document.getElementById("setCurrency"), setLanguage=document.getElementById("setLanguage");
-
-const MARKETS=[
-  {name:"Global / International",currency:"USD"},
-  {name:"Saudi Arabia",currency:"SAR"},
-  {name:"United Arab Emirates",currency:"AED"},
-  {name:"United Kingdom",currency:"GBP"},
-  {name:"United States",currency:"USD"},
-  {name:"European Union",currency:"EUR"},
-  {name:"Other",currency:"USD"}
-];
-
-const seed={
- settings:{org:"Pilot Organization",market:"Global / International",currency:"USD",language:"English"},
- projects:[
-  {id:"P-001",name:"International Infrastructure Pilot",code:"IIP-01",market:"Global / International",currency:"USD"},
-  {id:"P-002",name:"Riyadh Commercial Pilot",code:"RCP-01",market:"Saudi Arabia",currency:"SAR"}
- ],
- contracts:[
-  {id:"C-001",project:"P-001",title:"Main Works Contract",number:"MWC-001",party:"Example Contractor",value:12500000,currency:"USD"},
-  {id:"C-002",project:"P-002",title:"Construction Contract",number:"KSA-001",party:"Example Employer",value:42000000,currency:"SAR"}
- ],
- documents:[
-  {id:"D-001",name:"Main_Works_Contract.pdf",type:"Contract",size:"2.4 MB",project:"P-001",date:new Date().toISOString().slice(0,10)},
-  {id:"D-002",name:"Site_Instruction_027.pdf",type:"Instruction",size:"420 KB",project:"P-002",date:new Date().toISOString().slice(0,10)}
- ],
- gaps:[
-  {id:"G-001",project:"P-001",contract:"C-001",severity:"High",status:"Action Required",
-   what_is:"A project change is being implemented before the commercial record is complete.",
-   what_ought:"The change should be formally recorded, instructed, valued and approved under the contract process.",
-   why:"Uncontrolled change weakens entitlement, valuation and auditability.",
-   evidence:"Main Works Contract; project instruction record; meeting note.",
-   gap:"Physical execution is ahead of the contractual/commercial control record.",
-   impact:"Potential valuation dispute, delayed recovery and reduced evidence quality.",
-   action:"Create the change record, link evidence and issue the required contractual correspondence after review.",
-   owner:"Commercial Manager",deadline:future(10)},
-  {id:"G-002",project:"P-002",contract:"C-002",severity:"Critical",status:"Under Review",
-   what_is:"A notice-sensitive event has been identified but the notice register does not show a confirmed submission.",
-   what_ought:"The required notice should be issued within the contractual time bar and retained with delivery evidence.",
-   why:"Failure to comply with notice requirements may affect entitlement.",
-   evidence:"Construction Contract; Site Instruction 027; event record.",
-   gap:"The event exists but notice compliance has not been evidenced.",
-   impact:"Potential loss or weakening of time/cost entitlement.",
-   action:"Verify notice period immediately, locate proof of submission, and prepare a notice for approval if still permitted.",
-   owner:"Contract Manager",deadline:future(3)}
- ],
- actions:[
-  {id:"A-001",gap:"G-002",text:"Verify notice requirement and submission evidence.",owner:"Contract Manager",due:future(2),status:"In Progress"},
-  {id:"A-002",gap:"G-001",text:"Create formal change record and assemble evidence.",owner:"Commercial Manager",due:future(8),status:"Open"}
- ]
-};
-function future(days){const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
-function load(){try{return JSON.parse(localStorage.getItem("wiwoPilot"))||seed}catch(e){return seed}}
-let db=load();
-function persist(){localStorage.setItem("wiwoPilot",JSON.stringify(db));document.getElementById("saveState").innerHTML='<span class="statusdot"></span>Saved locally'}
-function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function money(v,c){try{return new Intl.NumberFormat(undefined,{style:"currency",currency:c||"USD",maximumFractionDigits:0}).format(v||0)}catch(e){return (c||"")+" "+(v||0)}}
-function sevBadge(v){let cls=v==="Critical"?"red":v==="High"?"amber":v==="Medium"?"blue":"gray";return `<span class="badge ${cls}">${esc(v)}</span>`}
-function statusBadge(v){let cls=["Resolved","Closed","Done"].includes(v)?"green":["Blocked"].includes(v)?"red":["Under Review","In Progress"].includes(v)?"blue":"gray";return `<span class="badge ${cls}">${esc(v)}</span>`}
-function table(headers,rows){if(!rows.length)return '<div class="empty">No records yet.</div>';return `<div class="tablewrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`}
-function projectName(id){return db.projects.find(x=>x.id===id)?.name||id}
-function contractName(id){return db.contracts.find(x=>x.id===id)?.title||id}
-function openModal(id){document.getElementById(id).classList.add("show")}
-function closeModal(id){document.getElementById(id).classList.remove("show")}
-function nextId(prefix,arr){return prefix+"-"+String(arr.length+1).padStart(3,"0")}
-function populateSelect(id,items,fn){document.getElementById(id).innerHTML=items.map(x=>`<option value="${esc(x.id)}">${esc(fn(x))}</option>`).join("")}
-function populateMarkets(){
-  ["marketSelect","setMarket","pMarket"].forEach(id=>document.getElementById(id).innerHTML=MARKETS.map(m=>`<option>${m.name}</option>`).join(""));
-  document.getElementById("marketSelect").value=db.settings.market;
-}
-function renderMetrics(){
- const openG=db.gaps.filter(g=>!["Resolved","Closed"].includes(g.status));
- const high=openG.filter(g=>["Critical","High"].includes(g.severity));
- const overdue=db.actions.filter(a=>a.status!=="Done" && a.due < new Date().toISOString().slice(0,10));
- document.getElementById("metrics").innerHTML=[
-  ["Projects",db.projects.length],["Open Gaps",openG.length],["Critical / High",high.length],["Overdue Actions",overdue.length]
- ].map(x=>`<div class="card metric"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join("");
- document.getElementById("dashboardGaps").innerHTML=high.slice(0,5).map(g=>`<div style="padding:10px 0;border-bottom:1px solid #EAECF0"><div>${sevBadge(g.severity)} ${statusBadge(g.status)}</div><div style="font-weight:700;margin-top:6px">${esc(g.gap)}</div><div class="sub">${esc(projectName(g.project))} • ${esc(g.owner)}</div></div>`).join("")||'<div class="empty">No critical/high gaps.</div>';
- const soon=db.actions.filter(a=>a.status!=="Done").sort((a,b)=>a.due.localeCompare(b.due)).slice(0,6);
- document.getElementById("dashboardActions").innerHTML=soon.map(a=>`<div style="padding:10px 0;border-bottom:1px solid #EAECF0"><div style="font-weight:700">${esc(a.text)}</div><div class="sub">${esc(a.owner)} • due ${esc(a.due)} • ${esc(a.status)}</div></div>`).join("")||'<div class="empty">No open actions.</div>';
-}
-function renderProjects(){
- document.getElementById("projectsTable").innerHTML=table(["Project","Code","Market","Currency","Contracts"],db.projects.map(p=>`<tr><td><strong>${esc(p.name)}</strong><br><span class="sub">${esc(p.id)}</span></td><td>${esc(p.code)}</td><td>${esc(p.market)}</td><td>${esc(p.currency)}</td><td>${db.contracts.filter(c=>c.project===p.id).length}</td></tr>`));
-}
-function renderContracts(){
- document.getElementById("contractsTable").innerHTML=table(["Contract","Project","Number","Counterparty","Value"],db.contracts.map(c=>`<tr><td><strong>${esc(c.title)}</strong><br><span class="sub">${esc(c.id)}</span></td><td>${esc(projectName(c.project))}</td><td>${esc(c.number)}</td><td>${esc(c.party)}</td><td>${money(c.value,c.currency)}</td></tr>`));
-}
-function renderDocuments(){
- document.getElementById("documentsTable").innerHTML=table(["Document","Type","Project","Size","Added"],db.documents.map(d=>`<tr><td><strong>${esc(d.name)}</strong><br><span class="sub">${esc(d.id)}</span></td><td>${esc(d.type)}</td><td>${esc(projectName(d.project))}</td><td>${esc(d.size)}</td><td>${esc(d.date)}</td></tr>`));
-}
-function renderGaps(){
- let sev=document.getElementById("gapSeverityFilter").value;
- let gs=db.gaps.filter(g=>!sev||g.severity===sev);
- document.getElementById("gapsTable").innerHTML=table(["ID","Severity","Gap","Project","Owner","Deadline","Status",""],gs.map(g=>`<tr>
- <td>${esc(g.id)}</td><td>${sevBadge(g.severity)}</td><td><strong>${esc(g.gap)}</strong></td><td>${esc(projectName(g.project))}</td><td>${esc(g.owner)}</td><td>${esc(g.deadline)}</td><td>${statusBadge(g.status)}</td>
- <td class="actions"><button class="btn small" onclick="viewGap('${g.id}')">View</button> <button class="btn small" onclick="editGap('${g.id}')">Edit</button></td></tr>`));
-}
-function renderActions(){
- document.getElementById("actionsTable").innerHTML=table(["Action","Gap","Owner","Due","Status",""],db.actions.map(a=>`<tr><td><strong>${esc(a.text)}</strong></td><td>${esc(a.gap)}</td><td>${esc(a.owner)}</td><td>${esc(a.due)}</td><td>${statusBadge(a.status)}</td><td><button class="btn small" onclick="toggleAction('${a.id}')">${a.status==="Done"?"Reopen":"Mark Done"}</button></td></tr>`));
-}
-function renderReport(){
- const open=db.gaps.filter(g=>!["Closed","Resolved"].includes(g.status));
- const critical=open.filter(g=>g.severity==="Critical");
- const report=document.getElementById("reportCard");
- report.innerHTML=`<div class="kicker">Contract Diagnostic</div><h1 style="margin:4px 0 8px">${esc(db.settings.org)}</h1><div class="sub">${esc(db.settings.market)} • generated ${new Date().toLocaleDateString()}</div>
- <hr><div class="grid"><div class="metric"><span>Open Gaps</span><strong>${open.length}</strong></div><div class="metric"><span>Critical</span><strong>${critical.length}</strong></div><div class="metric"><span>Open Actions</span><strong>${db.actions.filter(a=>a.status!=="Done").length}</strong></div><div class="metric"><span>Documents</span><strong>${db.documents.length}</strong></div></div>
- <hr><h2>Priority Findings</h2>${open.slice(0,10).map(g=>`<div class="gapfield"><div>${sevBadge(g.severity)} ${statusBadge(g.status)}</div><div class="k">Gap</div><div class="v">${esc(g.gap)}</div><div class="k" style="margin-top:6px">Impact</div><div class="v">${esc(g.impact)}</div><div class="k" style="margin-top:6px">Action</div><div class="v">${esc(g.action)}</div></div>`).join("")||'<div class="empty">No open gaps.</div>'}`;
-}
-function renderSettings(){
- document.getElementById("setOrg").value=db.settings.org;document.getElementById("setMarket").value=db.settings.market;document.getElementById("setCurrency").value=db.settings.currency;document.getElementById("setLanguage").value=db.settings.language;
-}
-function renderAll(){populateMarkets();renderMetrics();renderProjects();renderContracts();renderDocuments();renderGaps();renderActions();renderReport();renderSettings();populateSelects()}
-function populateSelects(){
- populateSelect("cProject",db.projects,p=>`${p.name} (${p.code})`);
- populateSelect("gProject",db.projects,p=>p.name);
- populateSelect("gContract",db.contracts,c=>`${c.title} — ${c.number}`);
- populateSelect("aGap",db.gaps,g=>`${g.id} — ${g.gap.slice(0,65)}`);
-}
-function openProjectModal(){document.getElementById("pName").value="";document.getElementById("pCode").value="";openModal("projectModal")}
-function addProject(){
- if(!pName.value.trim())return alert("Project name is required.");
- db.projects.push({id:nextId("P",db.projects),name:pName.value.trim(),code:pCode.value.trim()||"—",market:pMarket.value,currency:pCurrency.value});persist();closeModal("projectModal");renderAll()
-}
-function openContractModal(){populateSelects();["cTitle","cNumber","cParty","cValue"].forEach(id=>document.getElementById(id).value="");openModal("contractModal")}
-function addContract(){
- if(!cTitle.value.trim())return alert("Contract title is required.");
- db.contracts.push({id:nextId("C",db.contracts),project:cProject.value,title:cTitle.value.trim(),number:cNumber.value.trim(),party:cParty.value.trim(),value:Number(cValue.value||0),currency:cCurrency.value});persist();closeModal("contractModal");renderAll()
-}
-function openGapModal(){
- document.getElementById("gapModalTitle").textContent="New Gap";gId.value="";
- ["gIs","gOught","gWhy","gEvidence","gGap","gImpact","gAction","gOwner","gDeadline"].forEach(id=>document.getElementById(id).value="");
- gSeverity.value="Medium";gStatus.value="Detected";populateSelects();openModal("gapModal")
-}
-function editGap(id){
- const g=db.gaps.find(x=>x.id===id);if(!g)return;
- populateSelects();gapModalTitle.textContent="Edit "+g.id;gId.value=g.id;gProject.value=g.project;gContract.value=g.contract;gSeverity.value=g.severity;gStatus.value=g.status;
- gIs.value=g.what_is;gOught.value=g.what_ought;gWhy.value=g.why;gEvidence.value=g.evidence;gGap.value=g.gap;gImpact.value=g.impact;gAction.value=g.action;gOwner.value=g.owner;gDeadline.value=g.deadline;openModal("gapModal")
-}
-function saveGap(){
- if(!gGap.value.trim()||!gAction.value.trim())return alert("Gap and Action are required.");
- const rec={id:gId.value||nextId("G",db.gaps),project:gProject.value,contract:gContract.value,severity:gSeverity.value,status:gStatus.value,what_is:gIs.value.trim(),what_ought:gOught.value.trim(),why:gWhy.value.trim(),evidence:gEvidence.value.trim(),gap:gGap.value.trim(),impact:gImpact.value.trim(),action:gAction.value.trim(),owner:gOwner.value.trim(),deadline:gDeadline.value};
- const idx=db.gaps.findIndex(x=>x.id===rec.id); if(idx>=0)db.gaps[idx]=rec;else db.gaps.push(rec);
- persist();closeModal("gapModal");renderAll()
-}
-function viewGap(id){
- const g=db.gaps.find(x=>x.id===id);if(!g)return;gvTitle.textContent=g.id+" — "+g.severity;
- const fields=[["WHAT IT IS",g.what_is],["WHAT IT OUGHT TO BE",g.what_ought],["WHY",g.why],["EVIDENCE",g.evidence],["GAP",g.gap],["IMPACT",g.impact],["ACTION",g.action],["OWNER",g.owner],["DEADLINE",g.deadline],["STATUS",g.status]];
- gapView.innerHTML=`<div>${sevBadge(g.severity)} ${statusBadge(g.status)}</div>${fields.map(f=>`<div class="gapfield"><div class="k">${f[0]}</div><div class="v">${esc(f[1]||"—")}</div></div>`).join("")}`;openModal("gapViewModal")
-}
-function openActionModal(){populateSelects();aOwner.value="";aDue.value="";aStatus.value="Open";aText.value="";openModal("actionModal")}
-function addAction(){
- if(!aText.value.trim())return alert("Action text is required.");
- db.actions.push({id:nextId("A",db.actions),gap:aGap.value,text:aText.value.trim(),owner:aOwner.value.trim(),due:aDue.value,status:aStatus.value});persist();closeModal("actionModal");renderAll()
-}
-function toggleAction(id){const a=db.actions.find(x=>x.id===id);if(!a)return;a.status=a.status==="Done"?"Open":"Done";persist();renderAll()}
-function saveSettings(){db.settings={org:setOrg.value.trim()||"Organization",market:setMarket.value,currency:setCurrency.value,language:setLanguage.value};persist();renderAll()}
-function resetDemo(){if(confirm("Reset all pilot data to the original demo?")){localStorage.removeItem("wiwoPilot");db=JSON.parse(JSON.stringify(seed));persist();renderAll()}}
-function printReport(){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById("page-reports").classList.add("active");setTimeout(()=>window.print(),100)}
-document.getElementById("docUpload").addEventListener("change",e=>{
- const project=db.projects[0]?.id||"";[...e.target.files].forEach(f=>db.documents.push({id:nextId("D",db.documents),name:f.name,type:"Unclassified",size:f.size>1048576?(f.size/1048576).toFixed(1)+" MB":Math.ceil(f.size/1024)+" KB",project,date:new Date().toISOString().slice(0,10)}));persist();renderAll();e.target.value=""
-});
-document.getElementById("nav").addEventListener("click",e=>{if(!e.target.dataset.page)return;document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));e.target.classList.add("active");document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById("page-"+e.target.dataset.page).classList.add("active")});
-document.getElementById("marketSelect").addEventListener("change",e=>{db.settings.market=e.target.value;const m=MARKETS.find(x=>x.name===e.target.value);if(m)db.settings.currency=m.currency;persist();renderAll()});
-renderAll();
+const MARKETS=[{name:"Global / International",currency:"USD"},{name:"Saudi Arabia",currency:"SAR"},{name:"United Arab Emirates",currency:"AED"},{name:"United Kingdom",currency:"GBP"},{name:"United States",currency:"USD"},{name:"European Union",currency:"EUR"},{name:"Other",currency:"USD"}];
+function future(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+const seed={settings:{org:"International Contract Intelligence",market:"Global / International",currency:"USD",language:"English"},projects:[{id:"P-001",name:"International Infrastructure Pilot",code:"IIP-01",market:"Global / International",currency:"USD",stage:"Execution"},{id:"P-002",name:"Riyadh Commercial Pilot",code:"RCP-01",market:"Saudi Arabia",currency:"SAR",stage:"Execution"},{id:"P-003",name:"Gulf Development Programme",code:"GDP-01",market:"United Arab Emirates",currency:"AED",stage:"Pre-award"}],contracts:[{id:"C-001",project:"P-001",title:"Main Works Contract",number:"MWC-001",party:"Example Contractor",value:12500000,currency:"USD"},{id:"C-002",project:"P-002",title:"Construction Contract",number:"KSA-001",party:"Example Employer",value:42000000,currency:"SAR"},{id:"C-003",project:"P-003",title:"Professional Services Agreement",number:"PSA-014",party:"Example Consultant",value:3200000,currency:"AED"}],documents:[{id:"D-001",name:"Main_Works_Contract.pdf",type:"Contract",size:"2.4 MB",project:"P-001",date:new Date().toISOString().slice(0,10)},{id:"D-002",name:"Site_Instruction_027.pdf",type:"Instruction",size:"420 KB",project:"P-002",date:new Date().toISOString().slice(0,10)},{id:"D-003",name:"Programme_Update_08.pdf",type:"Programme",size:"1.1 MB",project:"P-001",date:new Date().toISOString().slice(0,10)},{id:"D-004",name:"Commercial_Meeting_Notes.docx",type:"Meeting Record",size:"198 KB",project:"P-002",date:new Date().toISOString().slice(0,10)}],gaps:[{id:"G-001",project:"P-001",contract:"C-001",severity:"High",status:"Action Required",what_is:"A project change is being implemented before the commercial record is complete.",what_ought:"The change should be formally recorded, instructed, valued and approved under the contract process.",why:"Uncontrolled change weakens entitlement, valuation and auditability.",evidence:"Main Works Contract; project instruction record; meeting note.",gap:"Physical execution is ahead of the contractual/commercial control record.",impact:"Potential valuation dispute, delayed recovery and reduced evidence quality.",action:"Create the change record, link evidence and issue the required contractual correspondence after review.",owner:"Commercial Manager",deadline:future(10)},{id:"G-002",project:"P-002",contract:"C-002",severity:"Critical",status:"Under Review",what_is:"A notice-sensitive event has been identified but the notice register does not show a confirmed submission.",what_ought:"The required notice should be issued within the contractual time bar and retained with delivery evidence.",why:"Failure to comply with notice requirements may affect entitlement.",evidence:"Construction Contract; Site Instruction 027; event record.",gap:"The event exists but notice compliance has not been evidenced.",impact:"Potential loss or weakening of time/cost entitlement.",action:"Verify notice period immediately, locate proof of submission, and prepare a notice for approval if still permitted.",owner:"Contract Manager",deadline:future(3)},{id:"G-003",project:"P-001",contract:"C-001",severity:"Medium",status:"Confirmed",what_is:"Latest programme narrative references recovery measures but responsibility is not assigned.",what_ought:"Recovery obligations should be tied to accountable owners, dates and supporting programme evidence.",why:"Unowned mitigation is difficult to monitor or enforce.",evidence:"Programme Update 08; progress meeting record.",gap:"Recovery actions are described but not converted into tracked obligations.",impact:"Reduced control over delay mitigation and later causation analysis.",action:"Create owned recovery actions and link them to programme milestones.",owner:"Planning Manager",deadline:future(14)}],actions:[{id:"A-001",gap:"G-002",text:"Verify notice requirement and submission evidence.",owner:"Contract Manager",due:future(2),status:"In Progress"},{id:"A-002",gap:"G-001",text:"Create formal change record and assemble evidence.",owner:"Commercial Manager",due:future(8),status:"Open"},{id:"A-003",gap:"G-003",text:"Assign recovery measures to responsible parties.",owner:"Planning Manager",due:future(12),status:"Open"}]};
+function load(){try{return JSON.parse(localStorage.getItem("wiwoPilotPro"))||seed}catch(e){return seed}}let db=load();function persist(){localStorage.setItem("wiwoPilotPro",JSON.stringify(db))}function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}function money(v,c){try{return new Intl.NumberFormat(undefined,{style:"currency",currency:c||"USD",maximumFractionDigits:0}).format(v||0)}catch(e){return (c||"")+" "+(v||0)}}function proj(id){return db.projects.find(x=>x.id===id)?.name||id}function sevBadge(v){return `<span class="badge ${v==="Critical"?"red":v==="High"?"amber":v==="Medium"?"blue":"gray"}">${esc(v)}</span>`}function statusBadge(v){return `<span class="badge ${["Resolved","Closed","Done"].includes(v)?"green":v==="Blocked"?"red":["Under Review","In Progress"].includes(v)?"blue":"gray"}">${esc(v)}</span>`}function openModal(id){document.getElementById(id).classList.add("show")}function closeModal(id){document.getElementById(id).classList.remove("show")}function nextId(prefix,arr){return prefix+"-"+String(arr.length+1).padStart(3,"0")}function table(headers,rows){if(!rows.length)return '<div class="empty">No records found.</div>';return `<table><thead><tr>${headers.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>`}function populate(id,items,label){const el=document.getElementById(id);if(!el)return;el.innerHTML=items.map(x=>`<option value="${esc(x.id)}">${esc(label(x))}</option>`).join("")}function populateMarkets(){["marketSelect","setMarket","pMarket"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=MARKETS.map(m=>`<option>${m.name}</option>`).join("")});marketSelect.value=db.settings.market}function populateSelects(){populate("cProject",db.projects,p=>`${p.name} (${p.code})`);populate("gProject",db.projects,p=>p.name);populate("gContract",db.contracts,c=>`${c.title} — ${c.number}`);populate("aGap",db.gaps,g=>`${g.id} — ${g.gap.slice(0,58)}`)}
+function renderDashboard(){const open=db.gaps.filter(g=>!["Resolved","Closed"].includes(g.status)),high=open.filter(g=>["Critical","High"].includes(g.severity));const overdue=db.actions.filter(a=>a.status!=="Done"&&a.due<new Date().toISOString().slice(0,10));kpis.innerHTML=[["Open gaps",open.length,high.length+" material","danger"],["Critical / High",high.length,"priority review","danger"],["Open actions",db.actions.filter(a=>a.status!=="Done").length,overdue.length+" overdue",overdue.length?"danger":"good"],["Evidence records",db.documents.length,"traceable sources","good"]].map(x=>`<div class="kpi"><div class="kpi-top"><span>${x[0]}</span><span class="delta ${x[3]}">${x[2]}</span></div><strong>${x[1]}</strong></div>`).join("");attentionList.innerHTML=high.sort((a,b)=>(a.severity==="Critical"?0:1)-(b.severity==="Critical"?0:1)).slice(0,5).map(g=>`<div class="attn-item"><div class="risk-dot">${g.severity==="Critical"?"!":"↑"}</div><div><div>${sevBadge(g.severity)} ${statusBadge(g.status)}</div><div class="attn-title" style="margin-top:6px">${esc(g.gap)}</div><div class="meta">${esc(proj(g.project))} · ${esc(g.owner)} · due ${esc(g.deadline)}</div></div><button class="btn small" onclick="viewGap('${g.id}')">Review</button></div>`).join("")||'<div class="empty">No material gaps.</div>';const soon=db.actions.filter(a=>a.status!=="Done").sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5);deadlineList.innerHTML=soon.map(a=>{const d=new Date(a.due+"T00:00:00");return `<div class="deadline"><div class="datebox"><b>${d.getDate()}</b><span>${d.toLocaleString(undefined,{month:"short"})}</span></div><div><b>${esc(a.text)}</b><div class="meta">${esc(a.owner)} · ${statusBadge(a.status)}</div></div></div>`}).join("")||'<div class="empty">No deadlines.</div>';const counts={Critical:0,High:0,Medium:0,Low:0};open.forEach(g=>counts[g.severity]=(counts[g.severity]||0)+1);const max=Math.max(1,...Object.values(counts));riskBars.innerHTML=Object.entries(counts).map(([k,v])=>`<div class="barrow"><span>${sevBadge(k)}</span><div class="bar"><i style="width:${Math.round(v/max*100)}%"></i></div><b>${v}</b></div>`).join("");const supported=db.gaps.filter(g=>g.evidence&&g.evidence.trim().length>10).length,pct=db.gaps.length?Math.round(supported/db.gaps.length*100):0;evidenceCoverage.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:end"><div><div class="sub">Findings with evidence</div><strong style="font-size:34px">${pct}%</strong></div><span class="badge ${pct>75?"green":"amber"}">${supported}/${db.gaps.length} supported</span></div><div class="bar" style="height:10px;margin-top:16px"><i style="width:${pct}%"></i></div><div class="sub" style="margin-top:11px">Production adds page-level citations, contradictory evidence and source-open verification.</div>`}
+function renderProjects(){projectGrid.innerHTML=db.projects.map(p=>{const gaps=db.gaps.filter(g=>g.project===p.id&&!["Resolved","Closed"].includes(g.status)),acts=db.actions.filter(a=>{const g=db.gaps.find(x=>x.id===a.gap);return g&&g.project===p.id&&a.status!=="Done"});return `<div class="project-card"><div class="project-top"><div><div class="eyebrow">${esc(p.code)}</div><h3>${esc(p.name)}</h3><div class="sub">${esc(p.market)} · ${esc(p.stage||"Execution")}</div></div><span class="badge blue">${db.contracts.filter(c=>c.project===p.id).length} contract</span></div><div class="stats"><div class="mini"><b>${gaps.length}</b><span>Open gaps</span></div><div class="mini"><b>${gaps.filter(g=>["Critical","High"].includes(g.severity)).length}</b><span>Material</span></div><div class="mini"><b>${acts.length}</b><span>Actions</span></div></div></div>`}).join("")}
+function renderContracts(){contractsTable.innerHTML=table(["Contract","Project","Counterparty","Value","Open gaps"],db.contracts.map(c=>`<tr><td><div class="record-title">${esc(c.title)}</div><div class="record-sub">${esc(c.number)} · ${esc(c.id)}</div></td><td>${esc(proj(c.project))}</td><td>${esc(c.party)}</td><td>${money(c.value,c.currency)}</td><td>${db.gaps.filter(g=>g.contract===c.id&&!["Resolved","Closed"].includes(g.status)).length}</td></tr>`));activityTimeline.innerHTML=[["Gap G-002 moved to Under Review","Notice-sensitive event requires immediate evidence check."],["Evidence added","Programme Update 08 registered against International Infrastructure Pilot."],["Action assigned","Commercial Manager owns formal change record."],["Contract added","Professional Services Agreement added to Gulf Development Programme."]].map(x=>`<div class="event"><b>${x[0]}</b><p>${x[1]}</p></div>`).join("")}
+function renderGaps(){const q=(gapSearch.value||"").toLowerCase(),sev=gapSeverity.value,st=gapStatus.value;const gs=db.gaps.filter(g=>(!q||(g.gap+" "+g.impact+" "+g.owner+" "+proj(g.project)).toLowerCase().includes(q))&&(!sev||g.severity===sev)&&(!st||g.status===st));gapsTable.innerHTML=table(["ID","Severity","Finding","Project","Owner","Deadline","Status",""],gs.map(g=>`<tr><td><b>${esc(g.id)}</b></td><td>${sevBadge(g.severity)}</td><td><div class="record-title">${esc(g.gap)}</div><div class="record-sub">${esc(g.impact)}</div></td><td>${esc(proj(g.project))}</td><td>${esc(g.owner)}</td><td>${esc(g.deadline||"—")}</td><td>${statusBadge(g.status)}</td><td><button class="btn small" onclick="viewGap('${g.id}')">Open</button> <button class="btn small" onclick="editGap('${g.id}')">Edit</button></td></tr>`))}
+function renderActions(){const open=db.actions.filter(a=>a.status!=="Done");openActionCount.textContent=`${open.length} open`;actionList.innerHTML=db.actions.sort((a,b)=>a.due.localeCompare(b.due)).map(a=>`<div class="action"><div class="check ${a.status==="Done"?"done":""}" onclick="toggleAction('${a.id}')" style="cursor:pointer"></div><div style="flex:1"><b>${esc(a.text)}</b><div class="meta">${esc(a.gap)} · ${esc(a.owner)} · due ${esc(a.due)}</div></div>${statusBadge(a.status)}<button class="btn small" onclick="toggleAction('${a.id}')">${a.status==="Done"?"Reopen":"Complete"}</button></div>`).join("")||'<div class="empty">No actions.</div>'}
+function renderDocuments(){documentsTable.innerHTML=table(["Evidence","Type","Project","Size","Added"],db.documents.map(d=>`<tr><td><div class="record-title">${esc(d.name)}</div><div class="record-sub">${esc(d.id)}</div></td><td><span class="badge gray">${esc(d.type)}</span></td><td>${esc(proj(d.project))}</td><td>${esc(d.size)}</td><td>${esc(d.date)}</td></tr>`))}
+function renderReport(){const open=db.gaps.filter(g=>!["Resolved","Closed"].includes(g.status)),crit=open.filter(g=>g.severity==="Critical");reportView.innerHTML=`<div class="report-hero"><div class="eyebrow" style="color:#9fc5ff">Contract intelligence report</div><h1 style="margin-top:5px">${esc(db.settings.org)}</h1><div class="sub">${esc(db.settings.market)} · generated ${new Date().toLocaleDateString()}</div><div class="report-grid"><div class="report-stat"><b>${open.length}</b><span>Open gaps</span></div><div class="report-stat"><b>${crit.length}</b><span>Critical</span></div><div class="report-stat"><b>${db.actions.filter(a=>a.status!=="Done").length}</b><span>Open actions</span></div><div class="report-stat"><b>${db.documents.length}</b><span>Evidence records</span></div></div></div><div class="card"><div class="card-head"><h2>Priority contractual findings</h2><span class="badge blue">Evidence-led</span></div><div class="card-body">${open.slice(0,8).map(g=>`<div class="gap-section"><div style="display:flex;gap:6px;margin-bottom:7px">${sevBadge(g.severity)}${statusBadge(g.status)}</div><div class="gap-label">Gap</div><div class="gap-value"><b>${esc(g.gap)}</b></div><div class="gap-label" style="margin-top:9px">Impact</div><div class="gap-value">${esc(g.impact)}</div><div class="gap-label" style="margin-top:9px">Required action</div><div class="gap-value">${esc(g.action)} <span class="meta">Owner: ${esc(g.owner)} · ${esc(g.deadline)}</span></div></div>`).join("")||'<div class="empty">No open findings.</div>'}</div></div>`}
+function renderSettings(){setOrg.value=db.settings.org;setMarket.value=db.settings.market;setCurrency.value=db.settings.currency;setLanguage.value=db.settings.language;workspaceName.textContent=db.settings.org}
+function renderAll(){populateMarkets();populateSelects();renderDashboard();renderProjects();renderContracts();renderGaps();renderActions();renderDocuments();renderReport();renderSettings()}
+function showPage(name){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById("page-"+name).classList.add("active");document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===name));window.scrollTo({top:0,behavior:"smooth"})}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(b)showPage(b.dataset.page)});marketSelect.addEventListener("change",e=>{db.settings.market=e.target.value;const m=MARKETS.find(x=>x.name===e.target.value);if(m)db.settings.currency=m.currency;persist();renderAll()});globalSearch.addEventListener("keydown",e=>{if(e.key==="Enter"){showPage("gaps");gapSearch.value=e.target.value;renderGaps()}})
+function openProjectModal(){pName.value="";pCode.value="";openModal("projectModal")}function addProject(){if(!pName.value.trim())return alert("Project name is required.");db.projects.push({id:nextId("P",db.projects),name:pName.value.trim(),code:pCode.value.trim()||"—",market:pMarket.value,currency:pCurrency.value,stage:"Execution"});persist();closeModal("projectModal");renderAll()}
+function openContractModal(){populateSelects();["cTitle","cNumber","cParty","cValue"].forEach(id=>document.getElementById(id).value="");openModal("contractModal")}function addContract(){if(!cTitle.value.trim())return alert("Contract title is required.");db.contracts.push({id:nextId("C",db.contracts),project:cProject.value,title:cTitle.value.trim(),number:cNumber.value.trim(),party:cParty.value.trim(),value:Number(cValue.value||0),currency:cCurrency.value});persist();closeModal("contractModal");renderAll()}
+function openGapModal(){gapModalTitle.textContent="New gap";gId.value="";["gIs","gOught","gWhy","gEvidence","gGap","gImpact","gAction","gOwner","gDeadline"].forEach(id=>document.getElementById(id).value="");gSeverity.value="Medium";gStatus.value="Detected";populateSelects();openModal("gapModal")}function editGap(id){const g=db.gaps.find(x=>x.id===id);if(!g)return;populateSelects();gapModalTitle.textContent="Edit "+g.id;gId.value=g.id;gProject.value=g.project;gContract.value=g.contract;gSeverity.value=g.severity;gStatus.value=g.status;gIs.value=g.what_is;gOught.value=g.what_ought;gWhy.value=g.why;gEvidence.value=g.evidence;gGap.value=g.gap;gImpact.value=g.impact;gAction.value=g.action;gOwner.value=g.owner;gDeadline.value=g.deadline;openModal("gapModal")}function saveGap(){if(!gGap.value.trim()||!gAction.value.trim())return alert("Gap and Action are required.");const rec={id:gId.value||nextId("G",db.gaps),project:gProject.value,contract:gContract.value,severity:gSeverity.value,status:gStatus.value,what_is:gIs.value.trim(),what_ought:gOught.value.trim(),why:gWhy.value.trim(),evidence:gEvidence.value.trim(),gap:gGap.value.trim(),impact:gImpact.value.trim(),action:gAction.value.trim(),owner:gOwner.value.trim(),deadline:gDeadline.value};const i=db.gaps.findIndex(x=>x.id===rec.id);i>=0?db.gaps[i]=rec:db.gaps.push(rec);persist();closeModal("gapModal");renderAll()}
+function viewGap(id){const g=db.gaps.find(x=>x.id===id);if(!g)return;gvTitle.textContent=`${g.id} · ${g.severity}`;const fields=[["WHAT IT IS",g.what_is],["WHAT IT OUGHT TO BE",g.what_ought],["WHY",g.why],["EVIDENCE",g.evidence],["GAP",g.gap],["IMPACT",g.impact],["ACTION",g.action],["OWNER",g.owner],["DEADLINE",g.deadline],["STATUS",g.status]];gapView.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:8px">${sevBadge(g.severity)}${statusBadge(g.status)}</div>${fields.map(f=>`<div class="gap-section"><div class="gap-label">${f[0]}</div><div class="gap-value">${esc(f[1]||"—")}</div></div>`).join("")}`;openModal("gapViewModal")}
+function openActionModal(){populateSelects();aOwner.value="";aDue.value="";aStatus.value="Open";aText.value="";openModal("actionModal")}function addAction(){if(!aText.value.trim())return alert("Action text is required.");db.actions.push({id:nextId("A",db.actions),gap:aGap.value,text:aText.value.trim(),owner:aOwner.value.trim(),due:aDue.value,status:aStatus.value});persist();closeModal("actionModal");renderAll()}function toggleAction(id){const a=db.actions.find(x=>x.id===id);if(!a)return;a.status=a.status==="Done"?"Open":"Done";persist();renderAll()}
+docUpload.addEventListener("change",e=>{const project=db.projects[0]?.id||"";[...e.target.files].forEach(f=>db.documents.push({id:nextId("D",db.documents),name:f.name,type:"Unclassified",size:f.size>1048576?(f.size/1048576).toFixed(1)+" MB":Math.ceil(f.size/1024)+" KB",project,date:new Date().toISOString().slice(0,10)}));persist();renderAll();e.target.value=""});function saveSettings(){db.settings={org:setOrg.value.trim()||"Organization",market:setMarket.value,currency:setCurrency.value,language:setLanguage.value};persist();renderAll()}function resetDemo(){if(confirm("Reset all pilot data?")){localStorage.removeItem("wiwoPilotPro");db=JSON.parse(JSON.stringify(seed));persist();renderAll()}}renderAll();
 </script>
 </body>
 </html>
