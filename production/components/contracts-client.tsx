@@ -6,7 +6,8 @@ type Project={id:string;code:string;name:string};
 type Contract={id:string;project_id:string;contract_number:string|null;title:string;contract_type:string|null;employer:string|null;contractor:string|null;consultant:string|null;currency:string|null;contract_value:number|null;effective_date:string|null;commencement_date:string|null;completion_date:string|null;governing_law:string|null;status:string;created_at:string};
 
 export function ContractsClient({orgId,userId,projects,contracts:initial}:{orgId:string;userId:string;projects:Project[];contracts:Contract[]}){
-  const [contracts,setContracts]=useState(initial),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);\n  const requestId=useRef("");
+  const [contracts,setContracts]=useState(initial),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+  const requestId=useRef("");
   async function createContract(e:FormEvent<HTMLFormElement>){
     e.preventDefault();if(busy)return;setBusy(true);setMessage("");
     const form=e.currentTarget,f=new FormData(form);
