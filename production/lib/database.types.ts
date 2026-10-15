@@ -582,6 +582,48 @@ export type Database = {
           },
         ]
       }
+      contract_team_members: {
+        Row: {
+          assigned_by: string | null
+          contract_id: string
+          created_at: string
+          organization_id: string
+          team_role: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          contract_id: string
+          created_at?: string
+          organization_id: string
+          team_role?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          contract_id?: string
+          created_at?: string
+          organization_id?: string
+          team_role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_team_members_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_team_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           commencement_date: string | null
@@ -1309,32 +1351,50 @@ export type Database = {
         Row: {
           body: string
           channel_id: string
+          contract_id: string | null
           created_at: string
           deleted_at: string | null
+          document_id: string | null
           edited_at: string | null
           id: string
+          message_type: string
           organization_id: string
+          project_id: string | null
+          recipient_user_id: string | null
           sender_user_id: string
+          work_item_id: string | null
         }
         Insert: {
           body: string
           channel_id: string
+          contract_id?: string | null
           created_at?: string
           deleted_at?: string | null
+          document_id?: string | null
           edited_at?: string | null
           id?: string
+          message_type?: string
           organization_id: string
+          project_id?: string | null
+          recipient_user_id?: string | null
           sender_user_id: string
+          work_item_id?: string | null
         }
         Update: {
           body?: string
           channel_id?: string
+          contract_id?: string | null
           created_at?: string
           deleted_at?: string | null
+          document_id?: string | null
           edited_at?: string | null
           id?: string
+          message_type?: string
           organization_id?: string
+          project_id?: string | null
+          recipient_user_id?: string | null
           sender_user_id?: string
+          work_item_id?: string | null
         }
         Relationships: [
           {
@@ -1345,10 +1405,38 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "messages_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_work_item_id_fkey"
+            columns: ["work_item_id"]
+            isOneToOne: false
+            referencedRelation: "work_items"
             referencedColumns: ["id"]
           },
         ]
@@ -1619,6 +1707,48 @@ export type Database = {
         }
         Relationships: []
       }
+      project_team_members: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          organization_id: string
+          project_id: string
+          team_role: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          organization_id: string
+          project_id: string
+          team_role?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          organization_id?: string
+          project_id?: string
+          team_role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_team_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_team_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           code: string
@@ -1761,6 +1891,172 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_item_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          from_user_id: string | null
+          id: string
+          note: string | null
+          organization_id: string
+          to_user_id: string | null
+          work_item_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          from_user_id?: string | null
+          id?: string
+          note?: string | null
+          organization_id: string
+          to_user_id?: string | null
+          work_item_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          from_user_id?: string | null
+          id?: string
+          note?: string | null
+          organization_id?: string
+          to_user_id?: string | null
+          work_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_item_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_item_events_work_item_id_fkey"
+            columns: ["work_item_id"]
+            isOneToOne: false
+            referencedRelation: "work_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_items: {
+        Row: {
+          accepted_at: string | null
+          assigned_by: string
+          assigned_to: string | null
+          completed_at: string | null
+          contract_id: string | null
+          created_at: string
+          details: string | null
+          document_id: string | null
+          due_at: string | null
+          forwarded_at: string | null
+          id: string
+          last_overdue_alert_at: string | null
+          organization_id: string
+          overdue_alert_count: number
+          parent_work_item_id: string | null
+          priority: string
+          project_id: string | null
+          source_message_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_by: string
+          assigned_to?: string | null
+          completed_at?: string | null
+          contract_id?: string | null
+          created_at?: string
+          details?: string | null
+          document_id?: string | null
+          due_at?: string | null
+          forwarded_at?: string | null
+          id?: string
+          last_overdue_alert_at?: string | null
+          organization_id: string
+          overdue_alert_count?: number
+          parent_work_item_id?: string | null
+          priority?: string
+          project_id?: string | null
+          source_message_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_by?: string
+          assigned_to?: string | null
+          completed_at?: string | null
+          contract_id?: string | null
+          created_at?: string
+          details?: string | null
+          document_id?: string | null
+          due_at?: string | null
+          forwarded_at?: string | null
+          id?: string
+          last_overdue_alert_at?: string | null
+          organization_id?: string
+          overdue_alert_count?: number
+          parent_work_item_id?: string | null
+          priority?: string
+          project_id?: string | null
+          source_message_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_items_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_parent_work_item_id_fkey"
+            columns: ["parent_work_item_id"]
+            isOneToOne: false
+            referencedRelation: "work_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_source_message_id_fkey"
+            columns: ["source_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
