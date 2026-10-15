@@ -37,23 +37,23 @@ export async function POST(request:Request){
   const q=query.toLowerCase();
 
   if(has(q,"summary","overview","dashboard","workspace status","how are we doing")){
-    const [projects,contracts,documents,obligations,gaps,actions,members,notifications]=await Promise.all([
+    const [projects,contracts,documents,obligations,gaps,work,members,notifications]=await Promise.all([
       supabase.from("projects").select("id",{count:"exact",head:true}).eq("organization_id",orgId),
       supabase.from("contracts").select("id",{count:"exact",head:true}).eq("organization_id",orgId),
       supabase.from("documents").select("id,processing_status").eq("organization_id",orgId),
       supabase.from("obligations").select("id,status").eq("organization_id",orgId),
       supabase.from("gaps").select("id,severity,status").eq("organization_id",orgId),
-      supabase.from("actions").select("id,status,due_at").eq("organization_id",orgId),
+      supabase.from("work_items").select("id,status,due_at").eq("organization_id",orgId),
       supabase.from("organization_members").select("user_id",{count:"exact",head:true}).eq("organization_id",orgId),
       supabase.from("notifications").select("id,read_at").eq("organization_id",orgId).or("user_id.is.null,user_id.eq."+userId)
     ]);
     const material=(gaps.data||[]).filter(g=>["Critical","High"].includes(String(g.severity))&&!["Closed","Rejected","Not Applicable"].includes(String(g.status))).length;
-    const openActions=(actions.data||[]).filter(a=>!["Done","Closed","Completed"].includes(String(a.status))).length;
+    const openWork=(work.data||[]).filter(a=>!["Completed","Closed","Cancelled"].includes(String(a.status))).length;
     const failedDocs=(documents.data||[]).filter(d=>String(d.processing_status)==="failed").length;
     const openObligations=(obligations.data||[]).filter(o=>String(o.status)==="Open").length;
     const unread=(notifications.data||[]).filter(n=>!n.read_at).length;
     return ok(
-      "Database summary: "+(projects.count||0)+" projects, "+(contracts.count||0)+" contracts, "+(documents.data?.length||0)+" documents, "+openObligations+" open obligations, "+material+" Critical/High active gaps, "+openActions+" open actions, "+(members.count||0)+" team members, "+unread+" unread notifications, and "+failedDocs+" failed documents.",
+      "Database summary: "+(projects.count||0)+" projects, "+(contracts.count||0)+" contracts, "+(documents.data?.length||0)+" documents, "+openObligations+" open obligations, "+material+" Critical/High active gaps, "+openWork+" open work items, "+(members.count||0)+" team members, "+unread+" unread notifications, and "+failedDocs+" failed documents.",
       "workspace summary"
     );
   }
@@ -127,16 +127,26 @@ export async function POST(request:Request){
     );
   }
 
-  if(has(q,"action","actions","deadline","deadlines","due","overdue")){
-    const today=new Date().toISOString().slice(0,10);
+  if(has(q,"gap action","gap actions","contractual action","contractual actions")){
     const {data}=await supabase.from("actions").select("id,gap_id,action_text,owner_label,due_at,status,completion_evidence").eq("organization_id",orgId).order("due_at",{ascending:true}).limit(60);
-    let rows=data||[];
-    if(has(q,"overdue"))rows=rows.filter(a=>a.due_at&&a.due_at<today&&!["Done","Closed","Completed"].includes(String(a.status)));
-    else if(has(q,"open","outstanding"))rows=rows.filter(a=>!["Done","Closed","Completed"].includes(String(a.status)));
+    const rows=data||[];
     return ok(
-      rows.length?"Found "+rows.length+" action/deadline record"+(rows.length===1?"":"s")+" matching this request.":"No matching action or deadline records were found.",
-      "actions and deadlines",
+      rows.length?"Found "+rows.length+" contractual Gap action record"+(rows.length===1?"":"s")+".":"No contractual Gap actions were found.",
+      "Gap actions",
       rows.slice(0,40).map(a=>({label:a.action_text,meta:(a.owner_label||"Unassigned")+" · due "+isoDate(a.due_at)+" · "+a.status,href:a.gap_id?"/gaps/"+a.gap_id:"/actions"}))
+    );
+  }
+
+  if(has(q,"work","task","tasks","assignment","assignments","deadline","deadlines","due","overdue","action","actions")){
+    const now=Date.now();
+    const {data}=await supabase.from("work_items").select("id,project_id,contract_id,document_id,gap_id,action_id,title,details,priority,assigned_to,due_at,status,overdue_alert_count").eq("organization_id",orgId).order("due_at",{ascending:true}).limit(80);
+    let rows=data||[];
+    if(has(q,"overdue"))rows=rows.filter(a=>a.due_at&&new Date(a.due_at).getTime()<now&&!["Completed","Closed","Cancelled"].includes(String(a.status)));
+    else if(has(q,"open","outstanding","pending"))rows=rows.filter(a=>!["Completed","Closed","Cancelled"].includes(String(a.status)));
+    return ok(
+      rows.length?"Found "+rows.length+" canonical work record"+(rows.length===1?"":"s")+" matching this request.":"No matching work records were found.",
+      "work queue and deadlines",
+      rows.slice(0,40).map(a=>({label:a.title,meta:a.priority+" · due "+isoDate(a.due_at)+" · "+a.status+(a.overdue_alert_count?" · "+a.overdue_alert_count+" overdue alert(s)":""),href:"/communication?work="+a.id}))
     );
   }
 
