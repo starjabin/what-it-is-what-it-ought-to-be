@@ -42,7 +42,9 @@ export function CommunicationClient({
   const [contextDocument,setContextDocument]=useState("");
   const [queueView,setQueueView]=useState<"mine"|"assigned"|"all">("mine");
   const [notice,setNotice]=useState("");
-  const [busy,setBusy]=useState(false);\n  const messageRequestId=useRef("");\n  const workRequestId=useRef("");
+  const [busy,setBusy]=useState(false);
+  const messageRequestId=useRef("");
+  const workRequestId=useRef("");
 
   const names=useMemo(()=>Object.fromEntries(members.map(m=>[m.user_id,m.display_name||m.email||"Team member"])),[members]);
   const activeChannel=channels.find(c=>c.id===active);
