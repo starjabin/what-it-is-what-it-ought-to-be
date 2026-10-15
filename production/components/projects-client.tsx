@@ -4,7 +4,8 @@ import Link from "next/link";
 import {createClient} from "@/lib/supabase/client";
 type Project={id:string;code:string;name:string;market:string;status:string;created_at:string};
 export function ProjectsClient({orgId,userId,projects:initial,defaultMarket}:{orgId:string;userId:string;projects:Project[];defaultMarket:string}){
-  const [projects,setProjects]=useState(initial),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);\n  const requestId=useRef("");
+  const [projects,setProjects]=useState(initial),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+  const requestId=useRef("");
   async function createProject(e:FormEvent<HTMLFormElement>){
     e.preventDefault();if(busy)return;setBusy(true);setMessage("");
     const form=e.currentTarget,f=new FormData(form),code=String(f.get("code")||"").trim(),name=String(f.get("name")||"").trim(),market=String(f.get("market")||defaultMarket).trim();
