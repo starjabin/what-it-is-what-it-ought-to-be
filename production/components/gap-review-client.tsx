@@ -2,8 +2,10 @@
 import {FormEvent,useMemo,useRef,useState} from "react";
 import {createClient} from "@/lib/supabase/client";
 export function GapReviewClient({gap:initial,evidence,links,history,members,actions:initialActions,userId}:{gap:any;evidence:any[];links:any[];history:any[];members:any[];actions:any[];userId:string}){
- const [gap,setGap]=useState(initial),[actions,setActions]=useState(initialActions),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);\n const actionRequestId=useRef("");
- const names=useMemo(()=>Object.fromEntries(members.map((m:any)=>[m.user_id,m.display_name||m.email||"Team member"])),[members]);\n const canExecute=["Confirmed","Action Required","In Progress"].includes(gap.status);
+ const [gap,setGap]=useState(initial),[actions,setActions]=useState(initialActions),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const actionRequestId=useRef("");
+ const names=useMemo(()=>Object.fromEntries(members.map((m:any)=>[m.user_id,m.display_name||m.email||"Team member"])),[members]);
+ const canExecute=["Confirmed","Action Required","In Progress"].includes(gap.status);
  async function transition(status:string){const s=createClient();if(!s)return;const {data,error}=await s.from("gaps").update({status}).eq("id",gap.id).select("*").single();if(error){setMessage(error.message);return}setGap(data);setMessage("Gap status changed to "+status+".")}
  async function createAction(e:FormEvent<HTMLFormElement>){
   e.preventDefault();if(busy)return;setBusy(true);setMessage("");
