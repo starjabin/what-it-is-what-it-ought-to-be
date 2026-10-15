@@ -28,7 +28,7 @@ const objectives=[
 
 export function AnalystClient({scopes}:{scopes:Scope[]}){
   const [contractId,setContractId]=useState(scopes[0]?.id||"");
-  const [objective,setObjective]=useState(objectives[0][1]);
+  const [objective,setObjective]=useState<string>(objectives[0][1]);
   const [result,setResult]=useState<Result|null>(null);
   const [message,setMessage]=useState("");
   const [busy,setBusy]=useState(false);
