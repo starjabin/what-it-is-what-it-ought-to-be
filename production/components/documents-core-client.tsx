@@ -11,7 +11,8 @@ type Member={user_id:string;display_name:string|null;email:string|null};
 const allowed=["application/pdf","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/msword","text/plain","text/csv","message/rfc822","image/png","image/jpeg","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.ms-excel"];
 function hex(buf:ArrayBuffer){return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("")}
 export function DocumentsCoreClient({orgId,userId,documents:initial,versions:initialVersions,projects,contracts,assignments:initialAssignments,members}:{orgId:string;userId:string;documents:Doc[];versions:Version[];projects:Project[];contracts:Contract[];assignments:Assignment[];members:Member[]}){
- const [docs,setDocs]=useState(initial),[versions,setVersions]=useState(initialVersions),[assignments,setAssignments]=useState(initialAssignments),[selected,setSelected]=useState(initial[0]?.id||""),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);\n const workRequestId=useRef("");
+ const [docs,setDocs]=useState(initial),[versions,setVersions]=useState(initialVersions),[assignments,setAssignments]=useState(initialAssignments),[selected,setSelected]=useState(initial[0]?.id||""),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const workRequestId=useRef("");
  const names=useMemo(()=>Object.fromEntries(members.map(m=>[m.user_id,m.display_name||m.email||"Team member"])),[members]);
  const selectedDoc=docs.find(d=>d.id===selected);
  const selectedVersions=versions.filter(v=>v.document_id===selected).sort((a,b)=>b.version_no-a.version_no);
