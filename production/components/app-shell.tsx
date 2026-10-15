@@ -1,6 +1,6 @@
 import Link from "next/link";
 const core=[["/dashboard","DB","Dashboard"],["/assistant","IA","Internal Assistant"],["/projects","PJ","Projects"],["/contracts","CT","Contracts"],["/documents","DC","Documents"],["/obligations","OB","Obligations"],["/evidence","EV","Evidence"],["/gaps","GP","Gap Register"],["/actions","AC","Actions"],["/reports","RP","Reports"],["/analyst","AI","AI Analyst"]];
-const collaboration=[["/team","TM","Team"],["/communication","CM","Communication"],["/notifications","NT","Notifications"]];
+const collaboration=[["/team","TM","Teams"],["/communication","CM","Messaging Center"],["/notifications","NT","Notifications"]];
 const admin=[["/settings/ai","CF","AI Configuration"],["/audit","AU","Audit Log"],["/billing","BL","Billing"]];
 function Links({items}:{items:string[][]}){return <>{items.map(([href,icon,label])=><Link key={href} href={href} className="navLink"><span className="navIcon">{icon}</span>{label}</Link>)}</>}
 export function AppShell({children,mode="live",organizationName="Contract Intelligence Workspace"}:{children:React.ReactNode;mode?:string;organizationName?:string}){
