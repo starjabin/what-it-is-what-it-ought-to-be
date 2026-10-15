@@ -1,13 +1,13 @@
 "use client";
 
-import {FormEvent,useEffect,useMemo,useState} from "react";
+import {FormEvent,useEffect,useMemo,useRef,useState} from "react";
 import {createClient} from "@/lib/supabase/client";
 
 type Channel={id:string;name:string;description:string|null;project_id:string|null;created_at:string};
 type Msg={
   id:string;channel_id:string;sender_user_id:string;body:string;created_at:string;
   project_id:string|null;contract_id:string|null;document_id:string|null;work_item_id:string|null;
-  recipient_user_id:string|null;message_type:string;
+  recipient_user_id:string|null;message_type:string;client_request_id?:string|null;
 };
 type Member={user_id:string;display_name:string|null;email:string|null;job_title:string|null;role:string};
 type Project={id:string;name:string;code:string;status:string};
@@ -17,7 +17,7 @@ type WorkItem={
   id:string;project_id:string|null;contract_id:string|null;document_id:string|null;source_message_id:string|null;
   parent_work_item_id:string|null;title:string;details:string|null;priority:string;assigned_to:string|null;
   assigned_by:string;due_at:string|null;status:string;accepted_at:string|null;completed_at:string|null;
-  forwarded_at:string|null;last_overdue_alert_at:string|null;overdue_alert_count:number;created_at:string;updated_at:string;
+  forwarded_at:string|null;last_overdue_alert_at:string|null;overdue_alert_count:number;created_at:string;updated_at:string;client_request_id?:string|null;
 };
 type WorkEvent={id:string;work_item_id:string;actor_user_id:string|null;event_type:string;note:string|null;from_user_id:string|null;to_user_id:string|null;created_at:string};
 
@@ -42,7 +42,7 @@ export function CommunicationClient({
   const [contextDocument,setContextDocument]=useState("");
   const [queueView,setQueueView]=useState<"mine"|"assigned"|"all">("mine");
   const [notice,setNotice]=useState("");
-  const [busy,setBusy]=useState(false);
+  const [busy,setBusy]=useState(false);\n  const messageRequestId=useRef("");\n  const workRequestId=useRef("");
 
   const names=useMemo(()=>Object.fromEntries(members.map(m=>[m.user_id,m.display_name||m.email||"Team member"])),[members]);
   const activeChannel=channels.find(c=>c.id===active);
@@ -89,6 +89,7 @@ export function CommunicationClient({
     e.preventDefault();
     const body=text.trim();
     if(!body||!active)return;
+    if(!messageRequestId.current)messageRequestId.current=crypto.randomUUID();
 
     const s=createClient();if(!s)return;
     const {error}=await s.from("messages").insert({
@@ -100,9 +101,14 @@ export function CommunicationClient({
       contract_id:contextContract||null,
       document_id:contextDocument||null,
       recipient_user_id:recipient||null,
-      message_type:messageType
+      message_type:messageType,
+      client_request_id:messageRequestId.current
     });
-    if(error){setNotice(error.message);return}
+    if(error){
+      if(error.code==="23505"){setNotice("This message was already saved.");return}
+      setNotice(error.message);return
+    }
+    messageRequestId.current="";
     setText("");
     setMessageType("Message");
     setRecipient("");
@@ -147,6 +153,7 @@ export function CommunicationClient({
       if(!title)throw new Error("Work title is required.");
       if(!assignee)throw new Error("Assign the work to a team member.");
       if(!projectId)throw new Error("Select the project this work belongs to.");
+      if(!workRequestId.current)workRequestId.current=crypto.randomUUID();
 
       const s=createClient();if(!s)throw new Error("Service unavailable.");
       const {data,error}=await s.from("work_items").insert({
@@ -159,10 +166,15 @@ export function CommunicationClient({
         priority,
         assigned_to:assignee,
         assigned_by:userId,
-        due_at:due
+        due_at:due,
+        client_request_id:workRequestId.current
       }).select("*").single();
 
-      if(error)throw error;
+      if(error){
+        if(error.code==="23505")throw new Error("This work request was already saved. Open the existing item instead of creating another.");
+        throw error;
+      }
+      workRequestId.current="";
       setWorkItems(x=>[data as WorkItem,...x.filter(w=>w.id!==data.id)]);
 
       if(active){
@@ -176,7 +188,8 @@ export function CommunicationClient({
           document_id:documentId,
           work_item_id:data.id,
           recipient_user_id:assignee,
-          message_type:"Work Request"
+          message_type:"Work Request",
+          client_request_id:crypto.randomUUID()
         });
       }
 
@@ -216,7 +229,8 @@ export function CommunicationClient({
         document_id:item.document_id,
         work_item_id:id,
         recipient_user_id:toUser,
-        message_type:"Forward"
+        message_type:"Forward",
+        client_request_id:crypto.randomUUID()
       });
     }
     setNotice("Work forwarded and the new owner has been notified.");
