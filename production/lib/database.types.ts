@@ -17,6 +17,7 @@ export type Database = {
       actions: {
         Row: {
           action_text: string
+          client_request_id: string | null
           completed_at: string | null
           completion_evidence: string | null
           created_at: string
@@ -30,6 +31,7 @@ export type Database = {
         }
         Insert: {
           action_text: string
+          client_request_id?: string | null
           completed_at?: string | null
           completion_evidence?: string | null
           created_at?: string
@@ -43,6 +45,7 @@ export type Database = {
         }
         Update: {
           action_text?: string
+          client_request_id?: string | null
           completed_at?: string | null
           completion_evidence?: string | null
           created_at?: string
@@ -626,6 +629,7 @@ export type Database = {
       }
       contracts: {
         Row: {
+          client_request_id: string | null
           commencement_date: string | null
           completion_date: string | null
           consultant: string | null
@@ -648,6 +652,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          client_request_id?: string | null
           commencement_date?: string | null
           completion_date?: string | null
           consultant?: string | null
@@ -670,6 +675,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          client_request_id?: string | null
           commencement_date?: string | null
           completion_date?: string | null
           consultant?: string | null
@@ -1351,6 +1357,7 @@ export type Database = {
         Row: {
           body: string
           channel_id: string
+          client_request_id: string | null
           contract_id: string | null
           created_at: string
           deleted_at: string | null
@@ -1367,6 +1374,7 @@ export type Database = {
         Insert: {
           body: string
           channel_id: string
+          client_request_id?: string | null
           contract_id?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -1383,6 +1391,7 @@ export type Database = {
         Update: {
           body?: string
           channel_id?: string
+          client_request_id?: string | null
           contract_id?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -1751,6 +1760,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          client_request_id: string | null
           code: string
           created_at: string
           created_by: string | null
@@ -1761,6 +1771,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          client_request_id?: string | null
           code: string
           created_at?: string
           created_by?: string | null
@@ -1771,6 +1782,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          client_request_id?: string | null
           code?: string
           created_at?: string
           created_by?: string | null
@@ -1949,8 +1961,10 @@ export type Database = {
       work_items: {
         Row: {
           accepted_at: string | null
+          action_id: string | null
           assigned_by: string
           assigned_to: string | null
+          client_request_id: string | null
           completed_at: string | null
           contract_id: string | null
           created_at: string
@@ -1958,6 +1972,7 @@ export type Database = {
           document_id: string | null
           due_at: string | null
           forwarded_at: string | null
+          gap_id: string | null
           id: string
           last_overdue_alert_at: string | null
           organization_id: string
@@ -1965,6 +1980,7 @@ export type Database = {
           parent_work_item_id: string | null
           priority: string
           project_id: string | null
+          source_document_assignment_id: string | null
           source_message_id: string | null
           status: string
           title: string
@@ -1972,8 +1988,10 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          action_id?: string | null
           assigned_by: string
           assigned_to?: string | null
+          client_request_id?: string | null
           completed_at?: string | null
           contract_id?: string | null
           created_at?: string
@@ -1981,6 +1999,7 @@ export type Database = {
           document_id?: string | null
           due_at?: string | null
           forwarded_at?: string | null
+          gap_id?: string | null
           id?: string
           last_overdue_alert_at?: string | null
           organization_id: string
@@ -1988,6 +2007,7 @@ export type Database = {
           parent_work_item_id?: string | null
           priority?: string
           project_id?: string | null
+          source_document_assignment_id?: string | null
           source_message_id?: string | null
           status?: string
           title: string
@@ -1995,8 +2015,10 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          action_id?: string | null
           assigned_by?: string
           assigned_to?: string | null
+          client_request_id?: string | null
           completed_at?: string | null
           contract_id?: string | null
           created_at?: string
@@ -2004,6 +2026,7 @@ export type Database = {
           document_id?: string | null
           due_at?: string | null
           forwarded_at?: string | null
+          gap_id?: string | null
           id?: string
           last_overdue_alert_at?: string | null
           organization_id?: string
@@ -2011,12 +2034,20 @@ export type Database = {
           parent_work_item_id?: string | null
           priority?: string
           project_id?: string | null
+          source_document_assignment_id?: string | null
           source_message_id?: string | null
           status?: string
           title?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "work_items_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "actions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "work_items_contract_id_fkey"
             columns: ["contract_id"]
@@ -2029,6 +2060,13 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_gap_id_fkey"
+            columns: ["gap_id"]
+            isOneToOne: false
+            referencedRelation: "gaps"
             referencedColumns: ["id"]
           },
           {
@@ -2050,6 +2088,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_items_source_document_assignment_id_fkey"
+            columns: ["source_document_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "document_assignments"
             referencedColumns: ["id"]
           },
           {
@@ -2100,6 +2145,16 @@ export type Database = {
           p_organization_name: string
           p_project_code: string
           p_project_name: string
+        }
+        Returns: Json
+      }
+      create_gap_action_with_work: {
+        Args: {
+          p_action_text: string
+          p_due_at: string
+          p_gap_id: string
+          p_owner_user_id: string
+          p_request_id: string
         }
         Returns: Json
       }
