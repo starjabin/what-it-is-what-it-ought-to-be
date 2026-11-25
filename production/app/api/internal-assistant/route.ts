@@ -1,3 +1,5 @@
+import {cookies} from "next/headers";
+import {verifiedMfaSubject,chooseWorkspace,WORKSPACE_COOKIE} from "@/lib/security/session-scope";
 import {readStringFields} from "@/lib/security/api-input";
 import {RequestContractError} from "@/lib/security/request-contract";
 
@@ -25,10 +27,12 @@ export async function POST(request:Request){
   const {data:claims}=await supabase.auth.getClaims();
   if(!claims?.claims)return NextResponse.json({error:"Sign in is required."},{status:401});
 
-  const userId=String(claims.claims.sub);
-  const {data:membership}=await supabase.from("organization_members")
+  const userId=verifiedMfaSubject(claims.claims);if(!userId)return NextResponse.json({error:"MFA required",code:"MFA_REQUIRED"},{status:403});
+  const {data:members,error:membershipError}=await supabase.from("organization_members")
     .select("organization_id,role,display_name")
-    .eq("user_id",userId).limit(1).maybeSingle();
+    .eq("user_id",userId).limit(101);
+  if(membershipError||!members)return NextResponse.json({error:"Membership unavailable"},{status:503});
+  const membership=chooseWorkspace(members,(await cookies()).get(WORKSPACE_COOKIE)?.value);
 
   if(!membership?.organization_id)return NextResponse.json({error:"Workspace membership is required."},{status:403});
   const orgId=membership.organization_id;

@@ -635,6 +635,32 @@
         "privacy-and-authorization"
       ],
       "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/mfa/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Identity and Security",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Staging identity candidate. Live provider not yet configured."
+    },
+    {
+      "path": "app/workspace-select/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Identity and Security",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Staging identity candidate. Live provider not yet configured."
     }
   ]
 }
