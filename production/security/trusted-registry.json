@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "policy": "deny-by-default",
+  "packageInventory": {
+    "path": "package-lock.json",
+    "registry": "https://registry.npmjs.org/",
+    "state": "candidate",
+    "sha256": null,
+    "approval": null
+  },
+  "artifacts": [
+    {
+      "kind": "model",
+      "id": "openai/gpt-6.1-sol",
+      "publisher": "OpenAI",
+      "source": "https://api.openai.com/",
+      "version": "gpt-6.1-sol",
+      "integrity": null,
+      "environment": "staging",
+      "capabilities": [
+        "contract-review"
+      ],
+      "status": "pending",
+      "approval": null
+    },
+    {
+      "kind": "model",
+      "id": "openai/gpt-6-luna",
+      "publisher": "OpenAI",
+      "source": "https://api.openai.com/",
+      "version": "gpt-6-luna",
+      "integrity": null,
+      "environment": "staging",
+      "capabilities": [
+        "health-check"
+      ],
+      "status": "pending",
+      "approval": null
+    },
+    {
+      "kind": "skill",
+      "id": "gap-controls/agent-foundation",
+      "publisher": "GAP CONTROLS",
+      "source": "repository:lib/ai/agent-foundation.ts",
+      "version": "1",
+      "integrity": null,
+      "environment": "staging",
+      "capabilities": [
+        "read-only-review"
+      ],
+      "status": "pending",
+      "approval": null
+    },
+    {
+      "kind": "mcp",
+      "id": "external-mcp",
+      "publisher": "unassigned",
+      "source": null,
+      "version": null,
+      "integrity": null,
+      "environment": "staging",
+      "capabilities": [],
+      "status": "pending",
+      "approval": null
+    }
+  ]
+}
