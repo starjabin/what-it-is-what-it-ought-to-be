@@ -2,25 +2,39 @@ name: Production CI
 
 on:
   push:
+    branches: [main, 'dev/**']
+  pull_request:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: production
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup Node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
       - name: Install
-        run: npm install
-        working-directory: production
+        run: npm install --no-audit --no-fund
       - name: Typecheck
         run: npm run typecheck
-        working-directory: production
+      - name: Agent foundation tests
+        run: node --test tests/*.test.mjs
       - name: Build
         run: npm run build
-        working-directory: production
