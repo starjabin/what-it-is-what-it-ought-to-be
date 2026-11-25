@@ -1,5 +1,6 @@
 import type {Metadata} from "next";
 import "./globals.css";
+import "./design-system.css";
 export const metadata:Metadata={
  title:{default:"What It Is / What It Ought to Be",template:"%s | What It Is / What It Ought to Be"},
  description:"Contract Intelligence that turns gaps into action. Evidence, contract position, team communication, document control and accountable outcomes in one workspace.",
