@@ -1,3 +1,5 @@
+import {readStringFields} from "@/lib/security/api-input";
+import {RequestContractError} from "@/lib/security/request-contract";
 
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
@@ -31,8 +33,7 @@ export async function POST(request:Request){
   if(!membership?.organization_id)return NextResponse.json({error:"Workspace membership is required."},{status:403});
   const orgId=membership.organization_id;
 
-  const body=await request.json().catch(()=>null) as {query?:string}|null;
-  const query=String(body?.query||"").trim().slice(0,500);
+  let query:string;try{query=(await readStringFields(request,{query:{max:500,required:true}},4096)).query}catch(e){if(e instanceof RequestContractError)return NextResponse.json({error:e.message,code:e.code},{status:e.status});return NextResponse.json({error:"Invalid request"},{status:400})}
   if(!query)return NextResponse.json({error:"Enter a database question."},{status:400});
   const q=query.toLowerCase();
 

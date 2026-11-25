@@ -1,8 +1,11 @@
+import {outboundEmailAccepted} from "@/lib/security/outbound-policy";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 export const runtime="nodejs";
 
 export async function POST(request:Request){
+  // Independent privacy, authorization, recipient, escaping and abuse controls are not yet accepted.
+  if(!outboundEmailAccepted())return NextResponse.json({error:"Outbound email held pending compliance acceptance.",code:"EMAIL_SECURITY_HOLD"},{status:503});
   if(!process.env.RESEND_API_KEY)return NextResponse.json({error:"Email service is not configured."},{status:503});
   const supabase=await createClient();if(!supabase)return NextResponse.json({error:"Authentication is not configured."},{status:503});
   const {data:claims}=await supabase.auth.getClaims();if(!claims?.claims)return NextResponse.json({error:"Sign in is required."},{status:401});
@@ -23,6 +26,6 @@ export async function POST(request:Request){
     from,to:[member.email],subject:"Document assigned for action",
     html:`<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#102a43"><h2>Document action assigned</h2><p>Hello ${member.display_name||"team member"},</p><p><b>${doc?.file_name||"A project document"}</b> has been assigned to you in ${org?.name||"your workspace"}.</p><p><b>Required action:</b> ${a.instruction}</p><p><b>Priority:</b> ${a.priority}<br><b>Due:</b> ${a.due_at||"No due date set"}</p><p><a href="${base}/documents" style="display:inline-block;background:#2f6fed;color:white;text-decoration:none;padding:12px 18px;border-radius:8px">Open document workspace</a></p></div>`
   })});
-  if(!res.ok){const detail=await res.text();console.error("resend-document-assignment",detail);return NextResponse.json({error:"Email provider rejected the message."},{status:502})}
+  if(!res.ok){console.error("outbound-email-provider-rejected");return NextResponse.json({error:"Email provider rejected the message."},{status:502})}
   return NextResponse.json({ok:true});
 }

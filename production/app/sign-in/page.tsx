@@ -1,4 +1,5 @@
 "use client";
+import {safeReturnPath} from "@/lib/security/safe-return-path";
 import {useLocale,LanguageSwitch} from "@/components/locale-provider";
 
 import {FormEvent,useState} from "react";
@@ -23,7 +24,7 @@ export default function SignIn(){
     setBusy(false);
     if(error){setMessage(error.message);return}
     const next=new URLSearchParams(window.location.search).get("next");
-    window.location.href=next&&next.startsWith("/")?next:"/dashboard";
+    window.location.href=safeReturnPath(next);
   }
 
   return <main className="authShell" lang={locale} dir={dir}>

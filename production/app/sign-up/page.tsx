@@ -1,4 +1,5 @@
 "use client";
+import {safeReturnPath} from "@/lib/security/safe-return-path";
 import {useLocale,LanguageSwitch} from "@/components/locale-provider";
 
 import {FormEvent,useState} from "react";
@@ -22,7 +23,7 @@ export default function SignUp(){
     const supabase=createClient();
     if(!supabase){setBusy(false);setMessage("Authentication is not configured.");return}
     const next=new URLSearchParams(window.location.search).get("next");
-    const target=next&&next.startsWith("/")?next:"/onboarding";
+    const target=safeReturnPath(next,"/onboarding");
     const emailRedirectTo=window.location.origin+"/auth/callback?next="+encodeURIComponent(target);
     const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo}});
     setBusy(false);
