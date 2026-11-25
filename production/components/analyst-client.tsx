@@ -153,7 +153,7 @@ export function AnalystClient({scopes}:{scopes:Scope[]}){
           {busy?"Analyzing reviewed evidence…":"Generate Gap candidate"}
         </button>
         {!analysisReady&&<div className="analystDisabledNote">The analysis trigger remains locked until all four gates and provider health pass.</div>}
-        {message&&<div className="notice" style={{marginTop:12}}>{message}</div>}
+        {message&&<div role="status" aria-live="polite" className="notice" style={{marginTop:12}}>{message}</div>}
       </form>
     </section>
 

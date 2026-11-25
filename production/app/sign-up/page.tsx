@@ -54,7 +54,7 @@ export default function SignUp(){
           <input id="signup-confirm" name="confirm" type="password" autoComplete="new-password" minLength={8} required/>
           <button className="btn primary authButton" type="submit" disabled={busy}>{busy?"Creating account…":"Create account & continue"}</button>
         </form>
-        {message&&<div className="notice" style={{marginTop:12}}>{message}</div>}
+        {message&&<div role="status" aria-live="polite" className="notice" style={{marginTop:12}}>{message}</div>}
         <ChatGPTSignInButton next="/onboarding"/>
         <div className="authDivider"><span>Already a customer?</span></div>
         <Link className="btn authButton" href="/sign-in">Sign in</Link>

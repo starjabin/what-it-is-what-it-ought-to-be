@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="gapPage" aria-busy="true"><section className="card gapPanel" role="status"><h1>Loading workspace</h1><p className="muted">Retrieving the authorized workspace. No data is assumed until loading completes.</p></section></main>}

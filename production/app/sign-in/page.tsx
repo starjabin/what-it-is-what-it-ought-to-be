@@ -47,7 +47,7 @@ export default function SignIn(){
           <input id="signin-password" name="password" type="password" autoComplete="current-password" placeholder="••••••••" required/>
           <button className="btn primary authButton" type="submit" disabled={busy}>{busy?"Signing in…":"Sign in"}</button>
         </form>
-        {message&&<div className="notice" style={{marginTop:12}}>{message}</div>}
+        {message&&<div role="status" aria-live="polite" className="notice" style={{marginTop:12}}>{message}</div>}
         <ChatGPTSignInButton next="/dashboard"/>
         <div className="authDivider"><span>New client?</span></div>
         <Link className="btn authButton" href="/sign-up">Create ContractGap account</Link>
