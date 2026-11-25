@@ -38,3 +38,14 @@ jobs:
         run: node --experimental-strip-types --test tests/*.test.mjs
       - name: Build
         run: npm run build
+
+  gc05-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Disposable PostgreSQL concurrency acceptance
+        run: python3 production/docs/staging/gc05-postgres-acceptance.py
