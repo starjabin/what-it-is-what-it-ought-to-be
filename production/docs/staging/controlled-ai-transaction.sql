@@ -20,6 +20,7 @@ create table public.controlled_ai_jobs (
   state text not null default 'reserved' check(state in ('reserved','completed','failed')),
   gap_id uuid references public.gaps(id),
   created_at timestamptz not null default now(),
+  expires_at timestamptz not null default (now()+interval '15 minutes'),
   unique(organization_id,request_id)
 );
 alter table public.controlled_ai_limits enable row level security;
@@ -50,11 +51,23 @@ returns void language plpgsql security invoker set search_path='' as $$
 declare j public.controlled_ai_jobs%rowtype;
 begin
   select * into strict j from public.controlled_ai_jobs where id=p_job for update;
-  if j.state<>'reserved' or j.attempts_used>=j.attempts_reserved or j.period<>date_trunc('month',now() at time zone 'UTC')::date then raise exception 'Reservation unavailable'; end if;
+  if j.state<>'reserved' or j.expires_at<=now() or j.attempts_used>=j.attempts_reserved or j.period<>date_trunc('month',now() at time zone 'UTC')::date then raise exception 'Reservation unavailable'; end if;
   if not exists(select 1 from public.organization_members m where m.organization_id=j.organization_id and m.user_id=j.actor_id and m.role::text in ('owner','admin','contract_manager','contributor','reviewer')) then raise exception 'Unauthorized'; end if;
+  if not exists(select 1 from public.billing_accounts b where b.organization_id=j.organization_id and (b.status='active' or (b.status='trialing' and b.trial_ends_at>now()))) then raise exception 'Subscription inactive'; end if;
   if not exists(select 1 from public.controlled_ai_limits l where l.organization_id=j.organization_id and p_provider=any(l.approved_providers)) then raise exception 'Provider not approved'; end if;
   update public.controlled_ai_jobs set attempts_used=attempts_used+1,provider_history=array_append(provider_history,p_provider) where id=p_job;
 end $$;
+
+-- Failure closure never refunds reserved capacity and never reverses a committed job.
+create function public.fail_controlled_ai(p_job uuid)
+returns void language plpgsql security invoker set search_path='' as $
+declare j public.controlled_ai_jobs%rowtype;
+begin
+  select * into strict j from public.controlled_ai_jobs where id=p_job for update;
+  if j.state='reserved' then
+    update public.controlled_ai_jobs set state='failed' where id=j.id;
+  end if;
+end $;
 
 -- Single RPC transaction: either all canonical records commit, or none.
 create function public.finish_controlled_ai(p_job uuid,p_provider text,p_model text,p_proposal jsonb,p_evidence uuid[])
@@ -85,6 +98,6 @@ begin
   update public.controlled_ai_jobs set state='completed',gap_id=v_gap where id=j.id;
   return v_gap;
 end $$;
-revoke all on function public.reserve_controlled_ai(uuid,uuid,uuid,integer),public.consume_controlled_ai(uuid,text),public.finish_controlled_ai(uuid,text,text,jsonb,uuid[]) from public,anon,authenticated;
-grant execute on function public.reserve_controlled_ai(uuid,uuid,uuid,integer),public.consume_controlled_ai(uuid,text),public.finish_controlled_ai(uuid,text,text,jsonb,uuid[]) to service_role;
+revoke all on function public.reserve_controlled_ai(uuid,uuid,uuid,integer),public.consume_controlled_ai(uuid,text),public.fail_controlled_ai(uuid),public.finish_controlled_ai(uuid,text,text,jsonb,uuid[]) from public,anon,authenticated;
+grant execute on function public.reserve_controlled_ai(uuid,uuid,uuid,integer),public.consume_controlled_ai(uuid,text),public.fail_controlled_ai(uuid),public.finish_controlled_ai(uuid,text,text,jsonb,uuid[]) to service_role;
 commit;
