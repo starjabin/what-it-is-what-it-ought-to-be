@@ -28,6 +28,7 @@ export async function controlledReview(input:Input,deps:{
   const r=await reserveExecution(deps.rpc,{contractId:input.contract.id,verifiedActorId:input.verifiedActorId,requestId:input.requestId,attempts:4});
   try{
    await emit("reserved","none");
+   reason="provider";
    const result=await executeReview({evidence,obligations},async task=>{
     requireExecutionEnabled(deps.checkStop());deps.checkPolicy();assertSafePayload({evidence:task.evidence,obligations:task.obligations,prior:task.prior});
     await emit("dispatch","none");
@@ -40,8 +41,8 @@ export async function controlledReview(input:Input,deps:{
    reason="persistence";
    if(!result.grounded)throw Error("Review not grounded");
    await deps.commit(r.jobId,result);
-   // Commit may already be durable; a failed post-commit audit is reconciliation, not rollback.
-   await emit("completed","none");
+   // A completion audit failure is an explicit reconciliation error, not a refund or failed commit.
+   try { await emit("completed","none"); } catch { throw Error("Committed review; audit reconciliation required"); }
    return result;
   }catch(e){await r.fail();throw e;}
  }catch(e){await emit("blocked",reason);throw e;}

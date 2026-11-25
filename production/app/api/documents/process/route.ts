@@ -1,3 +1,4 @@
+import {legacyDispatchAllowed} from "@/lib/security/security-events";
 import OpenAI from "openai";
 import {requireConfiguredModel} from "@/lib/security/trusted-registry";
 import {NextResponse} from "next/server";
@@ -74,6 +75,7 @@ function classifyAIError(error:unknown){
 }
 
 export async function POST(request:Request){
+  if(!legacyDispatchAllowed())return NextResponse.json({error:"AI execution is held pending controlled staging integration.",code:"AI_SECURITY_HOLD"},{status:503});
   if(!process.env.OPENAI_API_KEY)return NextResponse.json({error:"OpenAI is not configured."},{status:503});
   const supabase=await createClient();
   if(!supabase)return NextResponse.json({error:"Authentication is not configured."},{status:503});
@@ -239,7 +241,7 @@ export async function POST(request:Request){
       missing_information:parsed.missing_information
     });
   }catch(error){
-    console.error("contract-processing",error);
+    console.error("ai-operation-failed");
     const classified=classifyAIError(error);
     if(!aiRunPersisted){
       await supabase.from("ai_runs").insert({

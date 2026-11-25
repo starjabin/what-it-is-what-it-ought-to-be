@@ -1,3 +1,4 @@
+import {legacyDispatchAllowed} from "@/lib/security/security-events";
 import OpenAI from "openai";
 import {requireConfiguredModel} from "@/lib/security/trusted-registry";
 import {NextResponse} from "next/server";
@@ -41,6 +42,7 @@ function classifyAIError(error:unknown){
 }
 
 export async function POST(request:Request){
+  if(!legacyDispatchAllowed())return NextResponse.json({error:"AI execution is held pending controlled staging integration.",code:"AI_SECURITY_HOLD"},{status:503});
   if(!process.env.OPENAI_API_KEY){
     return NextResponse.json({error:"AI analysis is not configured.",code:"AI_NOT_CONFIGURED"},{status:503});
   }
@@ -52,17 +54,20 @@ export async function POST(request:Request){
   if(!claims?.claims)return NextResponse.json({error:"Sign in is required."},{status:401});
   const userId=String(claims.claims.sub);
 
+  const body=await request.json().catch(()=>null) as {contractId?:string;objective?:string}|null;
+  if(!body?.contractId)return NextResponse.json({error:"Contract is required."},{status:400});
+  const {data:targetContract}=await supabase.from("contracts").select("organization_id").eq("id",body.contractId).maybeSingle();
+  if(!targetContract)return NextResponse.json({error:"Contract not found."},{status:404});
   const {data:membership}=await supabase.from("organization_members")
     .select("organization_id,role")
-    .eq("user_id",userId).limit(1).maybeSingle();
+    .eq("user_id",userId).eq("organization_id",targetContract.organization_id).maybeSingle();
 
   if(!membership?.organization_id)return NextResponse.json({error:"Create a workspace first."},{status:403});
   if(!["owner","admin","contract_manager","contributor","reviewer"].includes(String(membership.role))){
     return NextResponse.json({error:"Your role cannot initiate analysis."},{status:403});
   }
 
-  const body=await request.json().catch(()=>null) as {contractId?:string;objective?:string}|null;
-  if(!body?.contractId)return NextResponse.json({error:"Contract is required."},{status:400});
+
   const objective=String(body.objective||"").trim().slice(0,600);
   if(!objective)return NextResponse.json({error:"Analysis objective is required."},{status:400});
 
@@ -108,7 +113,7 @@ export async function POST(request:Request){
   // Gate 2 — reviewed extraction. Only READY revisions can feed later gates.
   const {data:readyVersions}=await supabase.from("document_versions")
     .select("id").eq("organization_id",membership.organization_id)
-    .in("document_id",documentIds).eq("processing_status","ready");
+    .in("document_id",documentIds).eq("is_current",true).eq("processing_status","ready");
   const readyVersionIds=(readyVersions||[]).map(v=>v.id);
 
   if(!readyVersionIds.length){
@@ -288,7 +293,7 @@ export async function POST(request:Request){
       citation_count:chosen.length
     });
   }catch(error){
-    console.error("gap-analysis",error);
+    console.error("gap-analysis-failed");
     const classified=classifyAIError(error);
 
     if(!runPersisted){

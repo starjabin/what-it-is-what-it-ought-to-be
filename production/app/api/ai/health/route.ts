@@ -1,3 +1,4 @@
+import {legacyDispatchAllowed} from "@/lib/security/security-events";
 import OpenAI from "openai";
 import {requireConfiguredModel} from "@/lib/security/trusted-registry";
 import {NextResponse} from "next/server";
@@ -7,6 +8,7 @@ export const runtime="nodejs";
 export const maxDuration=30;
 
 export async function GET(){
+  if(!legacyDispatchAllowed())return NextResponse.json({error:"AI execution is held pending controlled staging integration.",code:"AI_SECURITY_HOLD"},{status:503});
   const supabase=await createClient();
   if(!supabase)return NextResponse.json({ok:false,status:"unconfigured"},{status:503});
   const {data:claims}=await supabase.auth.getClaims();

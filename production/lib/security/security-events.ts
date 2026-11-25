@@ -10,3 +10,6 @@ export function eventRecord(ids:Pick<SecurityEvent,"requestId"|"orgId"|"actorId"
 export function requireExecutionEnabled(config:{environment:string;enabled:boolean;emergencyStop:boolean}):void {
  if(config.environment!=="staging"||config.enabled!==true||config.emergencyStop!==false)throw Error("AI execution disabled");
 }
+
+/** Legacy routes lack atomic writes, verified classification and durable reservation. No runtime flag may bypass this release gate. */
+export function legacyDispatchAllowed():boolean { return false; }
