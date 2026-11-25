@@ -122,7 +122,7 @@ insert into public.obligations values ('{ob}','{org}','{project}','{c1}','{rev}'
         check(f"update public.document_versions set is_current=false where id='{rev}';")
         check(finish(),error="Invalid, duplicate or superseded evidence",role="service_role")
         check(f"update public.document_versions set is_current=true where id='{rev}';")
-        check("create function public.fixture_force_failure() returns trigger language plpgsql as $ begin raise exception 'fixture forced failure'; end $; create trigger fixture_failure before insert on public.audit_events for each row execute function public.fixture_force_failure();")
+        check("create function public.fixture_force_failure() returns trigger language plpgsql as $fixture$ begin raise exception 'fixture forced failure'; end $fixture$; create trigger fixture_failure before insert on public.audit_events for each row execute function public.fixture_force_failure();")
         check(finish(),error="fixture forced failure",role="service_role")
         for table in ["ai_runs","ai_outputs","gaps","gap_evidence","ai_citations","audit_events"]:
             check(f"select count(*) from public.{table};","0")
