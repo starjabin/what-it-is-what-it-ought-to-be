@@ -60,14 +60,14 @@ end $$;
 
 -- Failure closure never refunds reserved capacity and never reverses a committed job.
 create function public.fail_controlled_ai(p_job uuid)
-returns void language plpgsql security invoker set search_path='' as $
+returns void language plpgsql security invoker set search_path='' as $$
 declare j public.controlled_ai_jobs%rowtype;
 begin
   select * into strict j from public.controlled_ai_jobs where id=p_job for update;
   if j.state='reserved' then
     update public.controlled_ai_jobs set state='failed' where id=j.id;
   end if;
-end $;
+end $$;
 
 -- Single RPC transaction: either all canonical records commit, or none.
 create function public.finish_controlled_ai(p_job uuid,p_provider text,p_model text,p_proposal jsonb,p_evidence uuid[])
