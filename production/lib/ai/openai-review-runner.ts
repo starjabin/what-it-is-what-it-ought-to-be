@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { Runner, Role } from "./review-orchestrator";
+import type { Reservation } from "./execution-reservation";
 
 const mandates: Record<Role,string> = {
   evidence: "Check completeness and observed conditions against cited evidence.",
@@ -19,12 +20,16 @@ const schema = {
 };
 
 /** Construct only after authorized staging evidence and budget have been selected.
+ * Reservation must come from reserveExecution. This runner debits itself; do not wrap it in another debit layer.
  * Not connected to any production endpoint. No automatic fallback or persistence.
  */
-export function createOpenAIReviewRunner(apiKey:string,model:string):Runner {
-  if (!apiKey || !model.trim()) throw new Error("Explicit provider configuration required");
+export function createOpenAIReviewRunner(apiKey:string,model:string,reservation:Reservation):Runner {
+  if (!apiKey || !model.trim() || !reservation || typeof reservation.consume !== 'function') throw new Error("Explicit provider configuration and reservation required");
   const client = new OpenAI({apiKey,maxRetries:0,timeout:30000});
   return async task => {
+    task.signal.throwIfAborted();
+    await reservation.consume('openai');
+    task.signal.throwIfAborted();
     const response = await client.responses.create({
       model,store:false,max_output_tokens:task.maxOutputTokens,
       instructions:[
