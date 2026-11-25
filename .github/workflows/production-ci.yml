@@ -7,45 +7,38 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
-concurrency:
-  group: production-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# No third-party actions or write tokens. This repository is currently public.
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: production
+    timeout-minutes: 25
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
+      - name: Fetch exact public commit without external actions
+        shell: bash
+        run: |
+          test "$GITHUB_REPOSITORY" = "starjabin/what-it-is-what-it-ought-to-be"
+          [[ "$GITHUB_SHA" =~ ^[a-f0-9]{40}$ ]]
+          git init .
+          git fetch --no-tags --depth=1 https://github.com/starjabin/what-it-is-what-it-ought-to-be.git "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Verify runtime
+        run: |
+          node --version
+          node -e 'if(Number(process.versions.node.split(".")[0])<22)process.exit(1)'
+      - name: Pure agent and reservation tests
+        working-directory: production
+        run: node --experimental-strip-types --test tests/*.test.mjs
+      - name: Disposable PostgreSQL reservation acceptance
+        run: python3 production/docs/staging/gc05-postgres-acceptance.py
       - name: Install
+        working-directory: production
         run: npm install --no-audit --no-fund
       - name: Typecheck
+        working-directory: production
         run: npm run typecheck
-      - name: Agent foundation tests
-        run: node --experimental-strip-types --test tests/*.test.mjs
       - name: Build
+        working-directory: production
         run: npm run build
-
-  gc05-postgres:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Disposable PostgreSQL concurrency acceptance
-        run: python3 production/docs/staging/gc05-postgres-acceptance.py
