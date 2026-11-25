@@ -37,6 +37,9 @@ jobs:
       - name: Validate security control register
         working-directory: production
         run: node security/check-control-register.mjs
+      - name: Verify application-wide compliance inventory
+        working-directory: production
+        run: node security/check-compliance.mjs
       - name: Basic tracked credential scan
         run: node production/security/scan-tracked-secrets.mjs
       - name: Pure agent and reservation tests
@@ -74,3 +77,4 @@ jobs:
         run: |
           node security/verify-registry.mjs --release
           node security/check-control-register.mjs --release
+          node security/check-compliance.mjs --release

@@ -16,3 +16,6 @@ Never store provider credentials, payment card data or raw secrets in applicatio
 
 ## Factory Planner standard v2.0
 Follow docs/staging/planner-standard.md and lib/ai/factory-planner.ts. Require ten evidenced quality gates, cross-platform matrix, shared design tokens/components, bounded request contracts, regression and independent approval. A missing or untested gate is not passed. Never auto-promote or self-approve.
+
+## Certification readiness
+Follow docs/staging/certification-program.md and security/compliance-register.json for every page/API and operating process. New routes must be registered with owner and evidence requirements. No certification or compliance claim from passing tests; no self-approval, paid auditor or production release without authorization. Protect audit records and never commit sensitive evidence.
