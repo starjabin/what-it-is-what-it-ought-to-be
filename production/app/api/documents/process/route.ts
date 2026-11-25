@@ -96,6 +96,9 @@ export async function POST(request:Request){
     return NextResponse.json({error:"Contract Manager, Admin or Owner permission is required to process a contract."},{status:403});
   }
 
+  const model=process.env.OPENAI_MODEL||"gpt-6.1-sol";
+  try {requireConfiguredModel(model,"document-extraction");} catch {return NextResponse.json({error:"AI model is not approved for this environment and task.",code:"AI_MODEL_NOT_APPROVED"},{status:503});}
+
   let versionId=doc.current_version_id as string|null;
   let storagePath=doc.storage_path as string;
   if(versionId){
@@ -116,8 +119,6 @@ export async function POST(request:Request){
     return NextResponse.json({error:"Could not access the stored contract."},{status:500});
   }
 
-  const model=process.env.OPENAI_MODEL||"gpt-6.1-sol";
-  try {requireConfiguredModel(model,"document-extraction");} catch {return NextResponse.json({error:"AI model is not approved for this environment and task.",code:"AI_MODEL_NOT_APPROVED"},{status:503});}
   const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
 
   let aiRunPersisted=false;
