@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "scope": "staging",
+  "releasePolicy": "deny-until-independent-acceptance",
+  "controls": [
+    {
+      "id": "KS-SEC-01",
+      "title": "Endpoint and execution isolation",
+      "ownerRole": "Security Operations",
+      "implementation": "No model tools; hard legacy hold; credential-free CI; local sandbox policy",
+      "status": "partial",
+      "releaseEvidence": [
+        "Managed workstation EDR status",
+        "SIEM endpoint alerts",
+        "Sandbox and egress acceptance"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-02",
+      "title": "Software supply chain",
+      "ownerRole": "DevSecOps",
+      "implementation": "Pinned inventory, lock integrity, script-disabled installation, npm audit/signatures and SBOM",
+      "status": "partial",
+      "releaseEvidence": [
+        "Independent lock approval",
+        "Corporate mirror and malware quarantine",
+        "Signed build and immutable images"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-03",
+      "title": "Trusted AI registry",
+      "ownerRole": "AI Security Architect",
+      "implementation": "Deny-by-default registry, measured artifact bytes and capability checks",
+      "status": "partial",
+      "releaseEvidence": [
+        "Independent signed approvals",
+        "Protected branch and policy review",
+        "Runtime skill/MCP broker before enabling any"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-04",
+      "title": "Identity and permission broker",
+      "ownerRole": "Identity and Security Architect",
+      "implementation": "Explicit actor, tenant, project, role, evidence revision and independent review checks",
+      "status": "partial",
+      "releaseEvidence": [
+        "Live authenticated session binding",
+        "Server-derived classification and project ACL",
+        "Role revocation and cross-tenant browser/API tests"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-05",
+      "title": "AI firewall and DLP",
+      "ownerRole": "AI Security",
+      "implementation": "Bounded normalized text and structured payload heuristic inspection; synthetic/public policy only",
+      "status": "partial",
+      "releaseEvidence": [
+        "Approved data classification",
+        "DLP coverage and document sanitization",
+        "Independent adversarial assessment"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-06",
+      "title": "Mandatory GC-05 integration",
+      "ownerRole": "Backend Engineering",
+      "implementation": "Synthetic controlled review reserves once and debits every call; old AI routes hard-held",
+      "status": "partial",
+      "releaseEvidence": [
+        "Authenticated server-only database adapter",
+        "Live staging quota and provider acceptance",
+        "Monetary limit and reconciliation"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-07",
+      "title": "Atomic persistence and audit",
+      "ownerRole": "Database Engineering",
+      "implementation": "Staging SQL candidate locks records, validates citations and obligations, creates Under Review candidate atomically",
+      "status": "partial",
+      "releaseEvidence": [
+        "Full schema migration acceptance",
+        "Rollback and replay test results",
+        "Independent reviewer workflow"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-08",
+      "title": "Security observability and incident response",
+      "ownerRole": "Security Operations",
+      "implementation": "Metadata-only events, restricted append RPC, stop control and incident playbook",
+      "status": "partial",
+      "releaseEvidence": [
+        "Protected external log sink",
+        "SIEM alerts and response drill",
+        "Tamper-resistant retention and credential revocation"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-09",
+      "title": "AI red-team acceptance",
+      "ownerRole": "Independent QA",
+      "implementation": "Automated synthetic attacks for isolation, injection, data loss, tool misuse and approval bypass",
+      "status": "partial",
+      "releaseEvidence": [
+        "Independent red-team report",
+        "Live staging attack simulation",
+        "Remediation and retest signoff"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "KS-SEC-10",
+      "title": "AI security competency",
+      "ownerRole": "AI Security Champion",
+      "implementation": "Competency curriculum, assessment, incident reporting and named-role charter",
+      "status": "partial",
+      "releaseEvidence": [
+        "Named accountable people",
+        "Training attendance and assessed competence",
+        "Approved incident and governance procedures"
+      ],
+      "priority": "P1"
+    }
+  ]
+}
