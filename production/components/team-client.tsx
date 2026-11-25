@@ -202,8 +202,8 @@ export function TeamClient({
 
       <section className="card">
         <div className="cardHead"><h2>Invitations</h2><span className="badge neutral">{invites.filter(i=>i.status==="Pending").length} pending</span></div>
-        <div className="tableWrap">
-          <table><thead><tr><th>Email</th><th>Role</th><th>Job title</th><th>Status</th><th>Expires</th></tr></thead>
+        <div className="tableWrap" role="region" aria-label="team table 1" tabIndex={0}>
+          <table><thead><tr><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Job title</th><th scope="col">Status</th><th scope="col">Expires</th></tr></thead>
           <tbody>{invites.map(i=><tr key={i.id}><td><b>{i.email}</b></td><td>{i.role.replaceAll("_"," ")}</td><td>{i.job_title||"—"}</td><td><span className="badge neutral">{i.status}</span></td><td>{new Date(i.expires_at).toLocaleDateString()}</td></tr>)}</tbody></table>
         </div>
       </section>

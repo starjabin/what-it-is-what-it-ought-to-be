@@ -26,12 +26,12 @@ export function ProjectsClient({orgId,userId,projects:initial,defaultMarket}:{or
     finally{setBusy(false)}
   }
   return <div className="coreTwoCol">
-    <section className="card"><div className="cardHead"><div><h2>Project portfolio</h2><div className="muted">{projects.length} project{projects.length===1?"":"s"}</div></div><Link className="btn" href="/contracts">Contract master →</Link></div><div className="tableWrap"><table><thead><tr><th>Code</th><th>Project</th><th>Market</th><th>Status</th></tr></thead><tbody>{projects.map(p=><tr key={p.id}><td><b>{p.code}</b></td><td>{p.name}</td><td>{p.market}</td><td><span className="badge good">{p.status}</span></td></tr>)}</tbody></table></div></section>
+    <section className="card"><div className="cardHead"><div><h2>Project portfolio</h2><div className="muted">{projects.length} project{projects.length===1?"":"s"}</div></div><Link className="btn" href="/contracts">Contract master →</Link></div><div className="tableWrap" role="region" aria-label="projects table 1" tabIndex={0}><table><thead><tr><th scope="col">Code</th><th scope="col">Project</th><th scope="col">Market</th><th scope="col">Status</th></tr></thead><tbody>{projects.map(p=><tr key={p.id}><td><b>{p.code}</b></td><td>{p.name}</td><td>{p.market}</td><td><span className="badge good">{p.status}</span></td></tr>)}</tbody></table></div>{!projects.length&&<p className="emptyState">No projects yet. Create the first project using the form.</p>}</section>
     <aside className="card"><div className="cardHead"><h2>Create project</h2></div><div className="cardBody"><form onSubmit={createProject}>
       <label htmlFor="project-code">Project code</label><input id="project-code" name="code" required placeholder="MSS-01"/>
       <label htmlFor="project-name">Project name</label><input id="project-name" name="name" required placeholder="Mashrooth-SPCMS-SAAS"/>
       <label htmlFor="project-market">Market</label><input id="project-market" name="market" defaultValue={defaultMarket}/>
       <button className="btn primary" style={{width:"100%",marginTop:14}} disabled={busy}>{busy?"Saving…":"Save project once"}</button>
-    </form>{message&&<div className="notice" style={{marginTop:12}}>{message}</div>}</div></aside>
+    </form>{message&&<div role="status" aria-live="polite" className="notice" style={{marginTop:12}}>{message}</div>}</div></aside>
   </div>
 }
