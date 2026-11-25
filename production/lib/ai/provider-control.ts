@@ -11,18 +11,19 @@ export async function controlledAttempt<T>(
   if (secondary && (secondary.id === primary.id || !approvedProviders.has(secondary.id))) throw new Error("Secondary provider not independently authorized");
   const invoke = async (p:Attempt<T>) => {
     signal.throwIfAborted();
-    await reservation.consume(p.id);
-    signal.throwIfAborted();
     const result = await p.invoke(signal);
     signal.throwIfAborted();
     return result;
   };
   let raw:T;
   let provider=primary.id;
+  signal.throwIfAborted();
+  await reservation.consume(primary.id);
   try { raw=await invoke(primary); }
   catch(error) {
     if (!(error instanceof ProviderUnavailable) || !secondary || signal.aborted) throw error;
     provider=secondary.id;
+    await reservation.consume(secondary.id);
     raw=await invoke(secondary);
   }
   // Validation failure must never trigger fallback or conceal malformed results.
