@@ -5,9 +5,9 @@
     "path": "package-lock.json",
     "registry": "https://registry.npmjs.org/",
     "state": "candidate",
-    "sha256": "8b9357d965a720560505491571580a8348f2cd3fd44d41a07a47a9ad7bbd4470",
+    "sha256": "2af814deada31dacfbf2525c0ab77c1f5f09b4041e9ff047f8445aec106e47f6",
     "approval": null,
-    "count": 71
+    "count": 72
   },
   "artifacts": [
     {
