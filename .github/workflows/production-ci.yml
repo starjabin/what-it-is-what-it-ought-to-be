@@ -65,6 +65,9 @@ jobs:
       - name: Build
         working-directory: production
         run: npm run build
+      - name: Chromium responsive and interaction acceptance
+        working-directory: production
+        run: node tests/browser-acceptance.mjs
       - name: Main branch independent inventory approval gate
         if: github.ref == 'refs/heads/main'
         working-directory: production
