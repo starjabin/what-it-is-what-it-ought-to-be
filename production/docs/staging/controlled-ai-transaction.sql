@@ -70,23 +70,27 @@ begin
 end $$;
 
 -- Single RPC transaction: either all canonical records commit, or none.
-create function public.finish_controlled_ai(p_job uuid,p_provider text,p_model text,p_proposal jsonb,p_evidence uuid[])
+create function public.finish_controlled_ai(p_job uuid,p_provider text,p_model text,p_proposal jsonb,p_evidence uuid[],p_obligations uuid[])
 returns uuid language plpgsql security invoker set search_path='' as $$
 declare j public.controlled_ai_jobs%rowtype; c public.contracts%rowtype; v_run uuid; v_output uuid; v_gap uuid; v_count integer;
 begin
   select * into strict j from public.controlled_ai_jobs where id=p_job for update;
-  if j.state='completed' then return j.gap_id; end if;
-  if j.state<>'reserved' or j.attempts_used=0 or not coalesce(p_provider=any(j.provider_history),false) then raise exception 'Invalid completion'; end if;
   if not exists(select 1 from public.organization_members m where m.organization_id=j.organization_id and m.user_id=j.actor_id and m.role::text in ('owner','admin','contract_manager','contributor','reviewer')) then raise exception 'Unauthorized'; end if;
+  if j.state='completed' then return j.gap_id; end if;
+  if j.state<>'reserved' or j.expires_at<=now() or j.attempts_used=0 or not coalesce(p_provider=any(j.provider_history),false) then raise exception 'Invalid completion'; end if;
   select * into strict c from public.contracts where id=j.contract_id and organization_id=j.organization_id;
   if coalesce(cardinality(p_evidence),0)=0 or cardinality(p_evidence)>100 then raise exception 'Evidence required'; end if;
   select count(*) into v_count from (select e.id from public.evidence e join public.document_versions v on v.id=e.document_version_id and v.document_id=e.document_id and v.organization_id=e.organization_id where e.id=any(p_evidence) and e.organization_id=j.organization_id and e.contract_id=c.id and e.project_id=c.project_id and v.is_current and v.processing_status='ready' for share of e,v) q;
   if v_count<>cardinality(p_evidence) then raise exception 'Invalid, duplicate or superseded evidence'; end if;
-  if p_proposal is null or jsonb_typeof(p_proposal)<>'object' or octet_length(p_proposal::text)>64000 or nullif(trim(p_model),'') is null then raise exception 'Invalid result'; end if;
+  if coalesce(cardinality(p_obligations),0)=0 or cardinality(p_obligations)>100 then raise exception 'Obligations required'; end if;
+  select count(*) into v_count from (select o.id from public.obligations o join public.document_versions v on v.id=o.document_version_id and v.organization_id=o.organization_id where o.id=any(p_obligations) and o.organization_id=j.organization_id and o.contract_id=c.id and o.project_id=c.project_id and v.is_current and v.processing_status='ready' for share of o,v) q;
+  if v_count<>cardinality(p_obligations) then raise exception 'Invalid, duplicate or superseded obligation'; end if;
+  if p_proposal is null or jsonb_typeof(p_proposal)<>'object' or octet_length(p_proposal::text)>48000 or nullif(trim(p_model),'') is null then raise exception 'Invalid result'; end if;
+  if exists(select 1 from unnest(array['what_is','what_ought_to_be','why','gap','impact','action']) as k where jsonb_typeof(p_proposal->k) is distinct from 'string' or nullif(trim(p_proposal->>k),'') is null) then raise exception 'Required finding field missing'; end if;
   insert into public.ai_runs(organization_id,project_id,provider,model,task_type,status,prompt_version,created_by)
   values(j.organization_id,c.project_id,p_provider,p_model,'controlled_gap_review','completed','controlled-v1',j.actor_id) returning id into v_run;
   insert into public.ai_outputs(organization_id,ai_run_id,output_type,schema_version,output_json,reviewer_outcome)
-  values(j.organization_id,v_run,'gap_candidate','controlled-v1',p_proposal||jsonb_build_object('status','Under Review','evidence_ids',to_jsonb(p_evidence)),'pending') returning id into v_output;
+  values(j.organization_id,v_run,'gap_candidate','controlled-v1',p_proposal||jsonb_build_object('status','Under Review','evidence_ids',to_jsonb(p_evidence),'obligation_ids',to_jsonb(p_obligations)),'pending') returning id into v_output;
   insert into public.gaps(organization_id,project_id,contract_id,what_is,what_ought_to_be,why,gap,impact,action,status,source_kind,ai_run_id,created_by)
   values(j.organization_id,c.project_id,c.id,p_proposal->>'what_is',p_proposal->>'what_ought_to_be',p_proposal->>'why',p_proposal->>'gap',p_proposal->>'impact',p_proposal->>'action','Under Review','ai',v_run,j.actor_id) returning id into v_gap;
   insert into public.gap_evidence(gap_id,document_id,locator,evidence_kind,evidence_id,note)
@@ -98,6 +102,6 @@ begin
   update public.controlled_ai_jobs set state='completed',gap_id=v_gap where id=j.id;
   return v_gap;
 end $$;
-revoke all on function public.reserve_controlled_ai(uuid,uuid,uuid,integer),public.consume_controlled_ai(uuid,text),public.fail_controlled_ai(uuid),public.finish_controlled_ai(uuid,text,text,jsonb,uuid[]) from public,anon,authenticated;
-grant execute on function public.reserve_controlled_ai(uuid,uuid,uuid,integer),public.consume_controlled_ai(uuid,text),public.fail_controlled_ai(uuid),public.finish_controlled_ai(uuid,text,text,jsonb,uuid[]) to service_role;
+revoke all on function public.reserve_controlled_ai(uuid,uuid,uuid,integer),public.consume_controlled_ai(uuid,text),public.fail_controlled_ai(uuid),public.finish_controlled_ai(uuid,text,text,jsonb,uuid[],uuid[]) from public,anon,authenticated;
+grant execute on function public.reserve_controlled_ai(uuid,uuid,uuid,integer),public.consume_controlled_ai(uuid,text),public.fail_controlled_ai(uuid),public.finish_controlled_ai(uuid,text,text,jsonb,uuid[],uuid[]) to service_role;
 commit;
