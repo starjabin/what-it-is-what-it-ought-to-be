@@ -5,8 +5,9 @@
     "path": "package-lock.json",
     "registry": "https://registry.npmjs.org/",
     "state": "candidate",
-    "sha256": null,
-    "approval": null
+    "sha256": "8b9357d965a720560505491571580a8348f2cd3fd44d41a07a47a9ad7bbd4470",
+    "approval": null,
+    "count": 71
   },
   "artifacts": [
     {
@@ -43,7 +44,7 @@
       "publisher": "GAP CONTROLS",
       "source": "repository:lib/ai/agent-foundation.ts",
       "version": "1",
-      "integrity": null,
+      "integrity": "sha256:d2c453a0dacdd17cf7c68a73fd276efc705784dc451ccb74c29e38107b723fcf",
       "environment": "staging",
       "capabilities": [
         "read-only-review"
