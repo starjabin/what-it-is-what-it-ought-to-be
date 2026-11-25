@@ -13,3 +13,6 @@ Never store provider credentials, payment card data or raw secrets in applicatio
 - No dynamically downloaded models, skills, MCP servers or scripts. External artifacts require exact identity, content integrity, least-privilege capabilities, independent human approval and expiry in security/trusted-registry.json.
 - A pending entry is inventory, not approval. Do not auto-approve new or updated artifacts, edit a registry digest to suppress a failed check, or use a personal credential in CI.
 - Keep production unchanged; use a reviewed draft and isolated, credential-free builds. Never send live confidential evidence to an unapproved model.
+
+## Factory Planner standard v2.0
+Follow docs/staging/planner-standard.md and lib/ai/factory-planner.ts. Require ten evidenced quality gates, cross-platform matrix, shared design tokens/components, bounded request contracts, regression and independent approval. A missing or untested gate is not passed. Never auto-promote or self-approve.

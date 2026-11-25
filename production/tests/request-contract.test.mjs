@@ -1,0 +1,12 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readBoundedJson,parseGraphInput} from "../lib/security/request-contract.ts";
+const valid={requestId:"20000000-0000-4000-8000-000000000001",observed:650,required:800};
+const req=(body,headers={"Content-Type":"application/json"})=>new Request("https://example.invalid",{method:"POST",headers,body});
+test("valid bounded JSON",async()=>assert.deepEqual(parseGraphInput(await readBoundedJson(req(JSON.stringify(valid)),500)),valid));
+test("malformed JSON denied before domain parsing",async()=>await assert.rejects(readBoundedJson(req("{"),500),{status:400,code:"INVALID_JSON"}));
+test("non JSON denied",async()=>await assert.rejects(readBoundedJson(req("x",{"Content-Type":"text/plain"}),500),{status:415}));
+test("advertised oversize denied",async()=>await assert.rejects(readBoundedJson(req("{}",{"Content-Type":"application/json","Content-Length":"501"}),500),{status:413}));
+test("streaming oversize denied without trusting content length",async()=>{let sent=0;const body=new ReadableStream({pull(c){if(sent++<4)c.enqueue(new Uint8Array(300));else c.close()}});const r=new Request("https://example.invalid",{method:"POST",body,duplex:"half",headers:{"Content-Type":"application/json"}});await assert.rejects(readBoundedJson(r,500),{status:413});});
+test("byte limit not character count",async()=>await assert.rejects(readBoundedJson(req(JSON.stringify({x:"é".repeat(260)})),500),{status:413}));
+test("invalid domain values and extra keys denied",()=>{for(const v of [null,[],{...valid,observed:0},{...valid,required:1.5},{...valid,observed:"650"},{...valid,tenant:"other"},{...valid,requestId:"bad"}])assert.throws(()=>parseGraphInput(v),{status:400})});
