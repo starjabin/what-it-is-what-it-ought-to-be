@@ -35,6 +35,6 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
       - name: Agent foundation tests
-        run: node --test tests/*.test.mjs
+        run: node --experimental-strip-types --test tests/*.test.mjs
       - name: Build
         run: npm run build
