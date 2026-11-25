@@ -1,0 +1,4 @@
+import test from "node:test";import assert from "node:assert/strict";import {normalizeLocale,translate,direction,formatNumber,formatUtc} from "../lib/ui/locale.ts";
+test("explicit locale allowlist and direction",()=>{assert.equal(normalizeLocale("ar"),"ar");assert.equal(normalizeLocale("ar<script>"),"en");assert.equal(direction("ar"),"rtl");assert.equal(direction("en"),"ltr")});
+test("Arabic approved UI labels, English fallback without evidence mutation",()=>{assert.equal(translate("ar","Projects"),"المشاريع");assert.equal(translate("ar","WHAT IT OUGHT TO BE"),"الوضع المطلوب");assert.equal(translate("ar","Contract clause 8.1"),"Contract clause 8.1")});
+test("localized numeric and UTC Gregorian dates",()=>{assert.equal(formatNumber("en",1500),"1,500");assert.ok(formatNumber("ar",1500).includes("١"));assert.ok(formatUtc("en","2026-11-25T18:00:00Z").includes("18:00"));assert.ok(formatUtc("ar","2026-11-25T18:00:00Z").includes("٢٠٢٦"))});
