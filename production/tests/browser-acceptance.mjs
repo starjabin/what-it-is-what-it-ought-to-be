@@ -46,8 +46,11 @@ try{
  await until(async()=>await evaluate('document.querySelectorAll("tbody tr").length===1'),"history filter");
  await click("العربية");await until(async()=>await evaluate('document.querySelector("[lang=ar][dir=rtl]")&&document.body.innerText.includes("سجل المراجعات")'),"Arabic RTL");
  for(const width of [320,375,768,1024,1440]){await send("Emulation.setDeviceMetricsOverride",{width,height:900,deviceScaleFactor:1,mobile:false});await sleep(100);const m=await metrics();assert.ok(m.scroll<=width+2,"RTL overflow "+width);console.log("PASS Arabic RTL viewport",width);}
- await navigate("/staging-graph",375);await until(async()=>await evaluate('document.querySelector("[lang=ar][dir=rtl]")'),"locale persisted");
- await click("English");await until(async()=>await evaluate('document.querySelector("[lang=en][dir=ltr]")'),"English restored");
+ assert.equal(await evaluate('localStorage.getItem("gap-ui-locale")'),"ar");
+ await navigate("/staging-graph",375);await until(async()=>await evaluate('!!document.querySelector("[lang=ar][dir=rtl]")&&localStorage.getItem("gap-ui-locale")==="ar"'),"locale persisted");
+ for(const path of ["/sign-in","/sign-up"]){for(const width of [320,375,768,1024,1440]){await navigate(path,width);await until(async()=>await evaluate('!!document.querySelector("main[lang=ar][dir=rtl]")'),"Arabic auth");const m=await metrics();assert.ok(m.scroll<=width+2,"RTL auth overflow "+path+" "+width);assert.equal(m.labels,0);console.log("PASS Arabic authentication viewport",path,width);}}
+ await navigate("/staging-graph",375);await until(async()=>await evaluate('!!document.querySelector("[lang=ar][dir=rtl]")'),"Arabic graph restored");
+ await click("English");await until(async()=>await evaluate('!!document.querySelector("[lang=en][dir=ltr]")'),"English restored");
  await evaluate('document.activeElement?.blur();document.querySelector(".gapSkip").focus()');
  assert.equal(await evaluate('document.activeElement.classList.contains("gapSkip")'),true);
  console.log("PASS browser form, filter, persisted locale, RTL, keyboard skip link; mock API only, no cloud write. Lab metrics are not field CWV or full WCAG certification.");
