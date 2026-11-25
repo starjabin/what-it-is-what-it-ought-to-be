@@ -32,6 +32,7 @@ try:
  create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text);
  alter table storage.objects enable row level security;grant usage on schema storage to authenticated;grant select,insert,update,delete on storage.objects to authenticated;
  create function storage.foldername(n text) returns text[] language sql immutable as $$select string_to_array(n,'/')$$;
+ create publication supabase_realtime;
  create schema cron;create function cron.schedule(text,text,text) returns bigint language sql as $$select 1::bigint$$;
  """)
  for path in sorted((root.parent.parent/"supabase/migrations").glob("*.sql")):
