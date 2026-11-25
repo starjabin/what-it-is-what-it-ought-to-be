@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {reserveExecution,runReserved,invokeReserved} from '../lib/execution-reservation.ts';
+import {reserveExecution,runReserved,invokeReserved} from '../lib/ai/execution-reservation.ts';
 const id='12345678-1234-1234-1234-123456789abc';
 const input={contractId:id,verifiedActorId:id,requestId:id,attempts:4};
 const signal=()=>new AbortController().signal;
