@@ -189,7 +189,7 @@ const AR:Record<string,string>={
   "Use your work email. After confirmation, we’ll guide you through organization, project and contract setup.": "استخدم بريد العمل. بعد التأكيد، سنرشدك لإعداد المؤسسة والمشروع والعقد."
 };
 export function normalizeLocale(value:unknown):Locale{return value==="ar"?"ar":"en"}
-export function translate(locale:Locale,key:string):string{return locale==="ar"?(AR[key]??key):key}
+export function translate(locale:Locale,key:string):string{return locale==="ar"?(Object.hasOwn(AR,key)?AR[key]:key):key}
 export function direction(locale:Locale):"ltr"|"rtl"{return locale==="ar"?"rtl":"ltr"}
 export function formatNumber(locale:Locale,n:number):string{return new Intl.NumberFormat(locale==="ar"?"ar-SA":"en-GB").format(n)}
 export function formatUtc(locale:Locale,date:string):string{return new Intl.DateTimeFormat(locale==="ar"?"ar-SA-u-ca-gregory":"en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"UTC"}).format(new Date(date))}
