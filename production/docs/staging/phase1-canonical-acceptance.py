@@ -45,7 +45,10 @@ try:
  ok((root/"phase1-rls-candidate.sql").read_text())
  print("PASS candidate policy installation",flush=True)
  ok(f"""insert into auth.users(id,email) values('{U}','a@example.invalid'),('{V}','b@example.invalid'),('{O}','owner@example.invalid');
- insert into public.organizations(id,name,created_by) values('{A}','Synthetic A','{O}'),('{B}','Synthetic B','{V}');
+ set request.jwt.claims='{{"sub":"{O}","aal":"aal2","role":"authenticated"}}';
+ insert into public.organizations(id,name,created_by) values('{A}','Synthetic A','{O}');
+ set request.jwt.claims='{{"sub":"{V}","aal":"aal2","role":"authenticated"}}';
+ insert into public.organizations(id,name,created_by) values('{B}','Synthetic B','{V}');
  insert into public.organization_members(organization_id,user_id,role) values('{A}','{U}','contributor') on conflict do nothing;
  insert into public.projects(id,organization_id,code,name) values('{P}','{A}','P1','Allowed A'),('{Q}','{A}','P2','Restricted A'),('{R}','{B}','P1','Tenant B');
  insert into public.project_team_members(organization_id,project_id,user_id,assigned_by) values('{A}','{P}','{U}','{O}');
