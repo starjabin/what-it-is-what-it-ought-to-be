@@ -23,5 +23,5 @@ jobs:
       - name: Resolve lock without executing dependency scripts
         working-directory: production
         run: |
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-exact --registry=https://registry.npmjs.org/ @neondatabase/serverless
           node -e 'const f=require("fs"); const s=f.readFileSync("package-lock.json","utf8"); console.log("GAP_LOCK_BEGIN"); console.log(s); console.log("GAP_LOCK_END");'
