@@ -31,7 +31,7 @@ const AR:Record<string,string>={
   "Live tenant": "بيئة العميل الفعلية",
   "Preview": "معاينة",
   "GAP CONTROLS · Evidence-led project assurance": "ضمان المشاريع القائم على الأدلة",
-  "Module content is currently English. Navigation supports Arabic.": "محتوى الوحدات باللغة الإنجليزية حالياً. تدعم القائمة اللغة العربية.",
+  "Module content is currently English. Navigation supports Arabic.": "محتوى هذه الوحدة باللغة الإنجليزية حالياً. تدعم القائمة اللغة العربية.",
   "Skip to review": "انتقل إلى المراجعة",
   "Contract workspace": "مساحة العقود",
   "Private staging": "بيئة اختبار خاصة",
@@ -99,9 +99,7 @@ const AR:Record<string,string>={
   "Engineering schematic of underground cable trench and required clearance, illustrative not to scale": "رسم توضيحي لخندق الكابلات والخلوص المطلوب، ليس بمقياس رسم",
   "Depth": "العمق",
   "ENGINEERING EVIDENCE": "الأدلة الهندسية",
-  "Cable trench · illustrative section": "خندق الكابلات · مقطع توضيحي"
-,
-
+  "Cable trench · illustrative section": "خندق الكابلات · مقطع توضيحي",
   "Portfolio": "المحفظة",
   "Contract master": "سجل العقد الرئيسي",
   "Project context is the boundary for contracts, evidence, obligations, gaps and actions.": "يحدد المشروع نطاق العقود والأدلة والالتزامات والفجوات والإجراءات.",
@@ -152,7 +150,6 @@ const AR:Record<string,string>={
   "Active": "نشط",
   "project records": "سجلات المشاريع",
   "contract records": "سجلات العقود",
-  "Module content is currently English. Navigation supports Arabic.": "محتوى هذه الوحدة باللغة الإنجليزية حالياً. تدعم القائمة اللغة العربية.",
   "Evidence → Position → Gap → Impact → Action → Accountability → Outcome": "الأدلة ← الموقف ← الفجوة ← الأثر ← الإجراء ← المسؤولية ← النتيجة",
   "Sign in to ContractGap": "تسجيل الدخول إلى ContractGap",
   "Work email": "البريد الإلكتروني للعمل",
