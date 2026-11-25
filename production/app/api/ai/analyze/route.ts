@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
+import {reviewInstructions, validateEvidenceIds} from "@/lib/ai/agent-foundation";
 
 export const runtime="nodejs";
 export const maxDuration=120;
@@ -192,7 +193,8 @@ export async function POST(request:Request){
         "WHAT IT OUGHT TO BE must be grounded in REVIEWED OBLIGATIONS / OUGHT.",
         "evidence_ids MUST contain only IDs from EVIDENCE RECORDS and must directly support the proposed Gap.",
         "If the records do not support a material Gap, say so and list the missing information.",
-        "Return an Under Review proposal only. Never approve it, send correspondence, or state legal certainty."
+        "Return an Under Review proposal only. Never approve it, send correspondence, or state legal certainty.",
+        "Apply these read-only review disciplines in this single call; do not claim separate agents executed:\n"+reviewInstructions()
       ].join("\n"),
       input:
         "Contract: "+contract.title+
@@ -204,7 +206,7 @@ export async function POST(request:Request){
 
     const proposal=JSON.parse(response.output_text) as any;
     const allowed=new Set(evidence.map(e=>e.id));
-    proposal.evidence_ids=(proposal.evidence_ids||[]).filter((id:string)=>allowed.has(id));
+    proposal.evidence_ids=validateEvidenceIds(proposal.evidence_ids,allowed);
     proposal.status="Under Review";
 
     const {data:run,error:runError}=await supabase.from("ai_runs").insert({
