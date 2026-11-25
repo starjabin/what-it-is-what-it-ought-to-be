@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import {requireConfiguredModel} from "@/lib/security/trusted-registry";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 
@@ -116,6 +117,7 @@ export async function POST(request:Request){
   }
 
   const model=process.env.OPENAI_MODEL||"gpt-6.1-sol";
+  try {requireConfiguredModel(model,"document-extraction");} catch {return NextResponse.json({error:"AI model is not approved for this environment and task.",code:"AI_MODEL_NOT_APPROVED"},{status:503});}
   const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
 
   let aiRunPersisted=false;

@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import {requireConfiguredModel} from "../security/trusted-registry";
 import type { Runner, Role } from "./review-orchestrator";
 import type { Reservation } from "./execution-reservation";
 
@@ -25,9 +26,11 @@ const schema = {
  */
 export function createOpenAIReviewRunner(apiKey:string,model:string,reservation:Reservation):Runner {
   if (!apiKey || !model.trim() || !reservation || typeof reservation.consume !== 'function') throw new Error("Explicit provider configuration and reservation required");
+  requireConfiguredModel(model,"contract-review");
   const client = new OpenAI({apiKey,maxRetries:0,timeout:30000});
   return async task => {
     task.signal.throwIfAborted();
+    requireConfiguredModel(model,"contract-review");
     await reservation.consume('openai');
     task.signal.throwIfAborted();
     const response = await client.responses.create({

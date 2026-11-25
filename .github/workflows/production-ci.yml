@@ -28,14 +28,31 @@ jobs:
         run: |
           node --version
           node -e 'if(Number(process.versions.node.split(".")[0])<22)process.exit(1)'
+      - name: Validate dependency registry and lock integrity
+        working-directory: production
+        run: node security/verify-supply-chain.mjs
+      - name: Basic tracked credential scan
+        run: node production/security/scan-tracked-secrets.mjs
       - name: Pure agent and reservation tests
         working-directory: production
         run: node --experimental-strip-types --test tests/*.test.mjs
       - name: Disposable PostgreSQL reservation acceptance
         run: python3 production/docs/staging/gc05-postgres-acceptance.py
-      - name: Install
+      - name: Install exact dependencies without lifecycle scripts
         working-directory: production
-        run: npm install --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/
+      - name: Vulnerability gate (high and critical)
+        working-directory: production
+        run: npm audit --audit-level=high --registry=https://registry.npmjs.org/
+      - name: Verify npm registry signatures
+        working-directory: production
+        run: npm audit signatures --registry=https://registry.npmjs.org/
+      - name: Generate CycloneDX SBOM
+        working-directory: production
+        run: |
+          npm sbom --sbom-format cyclonedx > "$RUNNER_TEMP/gap-sbom.json"
+          node -e 'const s=require(process.env.RUNNER_TEMP+"/gap-sbom.json"); console.log("SBOM components:",s.components.length); if(!s.components.length)process.exit(1)'
+          sha256sum "$RUNNER_TEMP/gap-sbom.json"
       - name: Typecheck
         working-directory: production
         run: npm run typecheck

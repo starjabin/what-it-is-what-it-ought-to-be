@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import {requireConfiguredModel} from "@/lib/security/trusted-registry";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 
@@ -12,8 +13,9 @@ export async function GET(){
   if(!claims?.claims)return NextResponse.json({error:"Sign in is required."},{status:401});
   if(!process.env.OPENAI_API_KEY)return NextResponse.json({ok:false,status:"unconfigured"},{status:503});
 
-  const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
   const model=process.env.CUSTOMER_ASSISTANT_MODEL||"gpt-6-luna";
+  try {requireConfiguredModel(model,"health-check");} catch {return NextResponse.json({ok:false,status:"model_not_approved"},{status:503});}
+  const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
   try{
     await client.responses.create({
       model,

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import manifest from "../../security/trusted-registry.json" with { type: "json" };
 export type Kind = "model" | "skill" | "package" | "mcp";
 export type Artifact = {kind:Kind;id:string;publisher:string;source:string|null;version:string|null;integrity:string|null;environment:string;capabilities:string[];status:string;approval:null|{requestedBy:string;reviewedBy:string;ticket:string;expiresAt:string}};
@@ -21,4 +22,21 @@ export function assertTrustedArtifact(request:Request, catalog:readonly Artifact
 /** Remote model identities are not downloadable weights. A trusted deployment must attest immutable model/version identity; no alias auto-approval. */
 export function assertApprovedModel(provider:string,model:string,attestedFingerprint:string,capability:string,environment:string):void {
   assertTrustedArtifact({kind:"model",id:provider+"/"+model,source:"https://api.openai.com/",version:model,integrity:attestedFingerprint,environment,capabilities:[capability]});
+}
+
+/** Hash actual bytes rather than trusting a digest supplied by an artifact. */
+export function assertTrustedBytes(request:Omit<Request,"integrity">, bytes:Uint8Array, catalog?:readonly Artifact[], now?:number):Artifact {
+  if(request.kind==="model") return fail();
+  const integrity=request.kind==="package"?"sha512-"+createHash("sha512").update(bytes).digest("base64"):"sha256:"+createHash("sha256").update(bytes).digest("hex");
+  return assertTrustedArtifact({...request,integrity},catalog,now);
+}
+/** Server-only attestation configuration. Model entry must separately have independent approval.
+ * No user-controlled settings can grant approval. Fingerprint is an operator attestation,
+ * not proof of remote model weights or immutable provider behavior.
+ */
+export function requireConfiguredModel(model:string,capability:string):void {
+  const env=process.env.GAP_AI_ENVIRONMENT;
+  const fingerprint=process.env.GAP_AI_MODEL_FINGERPRINT;
+  if(env!=="staging"||!fingerprint) return fail();
+  assertApprovedModel("openai",model,fingerprint,capability,env);
 }

@@ -3,7 +3,7 @@
 Requires Docker and a local PostgreSQL 17 image, downloads it if absent.
 Run from any directory; uses a disposable container with no published ports.
 """
-import pathlib, subprocess, uuid, time, concurrent.futures, re
+import pathlib, subprocess, uuid, time, concurrent.futures, re, os
 
 ROOT=pathlib.Path(__file__).resolve().parent
 SQL=(ROOT/"controlled-ai-transaction.sql").read_text()
@@ -51,11 +51,11 @@ org,org2,actor,other,c1,c2=map(ident,[1,2,3,4,5,6])
 def reserve(contract,user,req,n):
     return f"select public.reserve_controlled_ai('{contract}','{user}','{req}',{n});"
 def run():
-    p=docker("run","--detach","--rm","--name",name,"--network","none","-e","POSTGRES_HOST_AUTH_METHOD=trust","-e","POSTGRES_DB=gc05_test","postgres:17")
+    p=docker("run","--detach","--rm","--name",name,"--network","none","-e","POSTGRES_HOST_AUTH_METHOD=trust","-e","POSTGRES_DB=gc05_test",os.environ.get("GC05_POSTGRES_IMAGE","postgres:17"))
     assert p.returncode==0,p.stderr
     try:
         for _ in range(45):
-            if docker("exec",name,"pg_isready","-U","postgres","-d","gc05_test").returncode==0: break
+            if docker("exec",name,"psql","-h","127.0.0.1","-X","-qAt","-U","postgres","-d","gc05_test","-c","select 1").returncode==0: break
             time.sleep(1)
         else: raise RuntimeError("PostgreSQL never became ready")
         check(fixture)

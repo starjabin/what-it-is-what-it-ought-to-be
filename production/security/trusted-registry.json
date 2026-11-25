@@ -19,7 +19,8 @@
       "integrity": null,
       "environment": "staging",
       "capabilities": [
-        "contract-review"
+        "contract-review",
+        "document-extraction"
       ],
       "status": "pending",
       "approval": null
