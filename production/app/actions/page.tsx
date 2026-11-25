@@ -1,3 +1,4 @@
+import {StandardTable,TableRegion} from "@/components/standard-primitives";
 import Link from "next/link";
 import {AppShell} from "@/components/app-shell";
 import {getWorkspaceContext} from "@/lib/workspace";
@@ -29,8 +30,7 @@ export default async function Actions(){
     </div>
 
     <div className="card">
-      <div className="tableWrap" role="region" aria-label="actions table 1" tabIndex={0}>
-        <table>
+      <TableRegion label="actions table 1"><StandardTable>
           <thead><tr><th scope="col">Action</th><th scope="col">Source Gap</th><th scope="col">Owner</th><th scope="col">Deadline</th><th scope="col">Action status</th><th scope="col">Execution</th><th scope="col">Completion evidence</th></tr></thead>
           <tbody>{(actions||[]).map(a=>{
             const work=workByAction[a.id];
@@ -44,8 +44,7 @@ export default async function Actions(){
               <td>{a.completion_evidence||"—"}</td>
             </tr>
           })}</tbody>
-        </table>
-      </div>
+        </StandardTable></TableRegion>
     </div>
   </AppShell>
 }
