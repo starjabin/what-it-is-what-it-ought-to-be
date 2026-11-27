@@ -4,6 +4,7 @@ import {StandardTable,TableRegion,FormFeedback} from "@/components/standard-prim
 import {FormEvent,useMemo,useRef,useState} from "react";
 import Link from "next/link";
 import {createClient} from "@/lib/supabase/client";
+import {verifyEvidenceBlob} from "@/lib/security/evidence-integrity";
 type Doc={id:string;project_id:string|null;contract_id:string|null;file_name:string;document_type:string|null;storage_path:string;content_hash:string|null;version_no:number;current_version_id:string|null;processing_status:string;created_at:string};
 type Version={id:string;document_id:string;version_no:number;file_name:string;storage_path:string;content_hash:string|null;mime_type:string|null;byte_size:number|null;processing_status:string;processing_error:string|null;is_current:boolean;created_at:string;extracted_at:string|null};
 type Project={id:string;code:string;name:string};
@@ -72,7 +73,20 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
   }
   finally{setBusy(false)}
  }
- async function openVersion(v:Version){const s=createClient();if(!s)return;const {data,error}=await s.storage.from("contract-evidence").createSignedUrl(v.storage_path,120);if(error){setMessage(error.message);return}window.open(data.signedUrl,"_blank","noopener,noreferrer")}
+ async function openVersion(v:Version){
+  if(busy)return;setBusy(true);setMessage("");
+  try{
+   const s=createClient();if(!s)throw Error("Storage service unavailable.");
+   const {data:source,error:lookupError}=await s.from("document_versions").select("id,document_id,file_name,storage_path,content_hash,byte_size").eq("id",v.id).eq("organization_id",orgId).eq("document_id",v.document_id).single();
+   if(lookupError||!source)throw Error("Revision unavailable or access denied.");
+   const {data:blob,error}=await s.storage.from("contract-evidence").download(source.storage_path);
+   if(error||!blob)throw Error("Stored source unavailable or access denied.");
+   await verifyEvidenceBlob(blob,source);
+   const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=source.file_name;a.rel="noopener noreferrer";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+   setMessage("SHA-256 and byte size verified. Original source downloaded.");
+  }catch(error){setMessage(error instanceof Error?error.message:"Verification failed. Source held for review.");}
+  finally{setBusy(false)}
+ }
  async function assign(e:FormEvent<HTMLFormElement>){
    e.preventDefault();if(busy)return;setBusy(true);setMessage("");
    const form=e.currentTarget,f=new FormData(form),docId=String(f.get("document")||selected),assignee=String(f.get("assignee")||"")||null,instruction=String(f.get("instruction")||"").trim(),priority=String(f.get("priority")||"Normal"),due=String(f.get("due")||"")||null;
@@ -111,7 +125,7 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
  const contractOptions=contracts.filter(c=>!selectedDoc?.project_id||c.project_id===selectedDoc.project_id);
  return <div className="documentsLayout">
   <section className="card"><div className="cardHead"><div><h2>Document register</h2><div className="muted">{docs.length} logical document{docs.length===1?"":"s"} · immutable revisions retained</div></div><Link className="btn" href="/obligations">Review extraction →</Link></div><div className="docList">{docs.length===0?<div className="emptyState">Upload the first contract package.</div>:docs.map(d=><button type="button" key={d.id} className={selected===d.id?"docRow active":"docRow"} onClick={()=>setSelected(d.id)}><div className="docIcon">DOC</div><div><b>{d.file_name}</b><span>{d.document_type||"Unclassified"} · {projects.find(p=>p.id===d.project_id)?.code||"General"} · v{d.version_no}</span><span className="meta">{contracts.find(c=>c.id===d.contract_id)?.title||"Project evidence"} · {d.processing_status}</span></div><div className="docActions"><span>{d.processing_status}</span></div></button>)}</div>
-   {selectedDoc&&<div className="revisionPanel"><div className="cardHead"><h3>Revision history</h3>{selectedDoc.contract_id&&<button className="btn primary" onClick={()=>processDocument(selectedDoc)} disabled={busy}>{busy?"Processing…":"Process current revision"}</button>}</div>{selectedVersions.map(v=><div className="revisionRow" key={v.id}><div><b>v{v.version_no} · {v.file_name}</b><span>{new Date(v.created_at).toLocaleString()} · {v.processing_status}{v.processing_error?" · "+v.processing_error:""}</span></div><button className="btn" onClick={()=>openVersion(v)}>Open source</button></div>)}</div>}
+   {selectedDoc&&<div className="revisionPanel"><div className="cardHead"><h3>Revision history</h3>{selectedDoc.contract_id&&<button className="btn primary" onClick={()=>processDocument(selectedDoc)} disabled={busy}>{busy?"Processing…":"Process current revision"}</button>}</div>{selectedVersions.map(v=><div className="revisionRow" key={v.id}><div><b>v{v.version_no} · {v.file_name}</b><span>{new Date(v.created_at).toLocaleString()} · {v.processing_status}{v.processing_error?" · "+v.processing_error:""}</span></div><button className="btn" disabled={busy} onClick={()=>void openVersion(v)}>Verify &amp; download source</button></div>)}</div>}
   </section>
   <aside className="stack"><section className="card"><div className="cardHead"><h2>Upload / new revision</h2></div><div className="cardBody"><form onSubmit={upload}>
    <label htmlFor="doc-revision">Revision of</label><select id="doc-revision" name="revisionOf" defaultValue=""><option value="">New logical document</option>{docs.map(d=><option key={d.id} value={d.id}>{d.file_name}</option>)}</select>
