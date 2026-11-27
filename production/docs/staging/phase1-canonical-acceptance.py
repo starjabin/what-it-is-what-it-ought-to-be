@@ -44,6 +44,10 @@ try:
   print("PASS canonical migration",path.name,flush=True)
  ok((root/"phase1-rls-candidate.sql").read_text())
  print("PASS candidate policy installation",flush=True)
+ ok((root/"sf01-independent-review.sql").read_text())
+ review=ok((root/"sf01-review-acceptance.sql").read_text())
+ assert "PASS: 9 assertions" in review and review.strip().splitlines()[-1].endswith("|0|0|0"),review
+ print("PASS SF01 independent reviewer and attribution; two tenants; transaction rollback",flush=True)
  ok(f"""insert into auth.users(id,email) values('{U}','a@example.invalid'),('{V}','b@example.invalid'),('{O}','owner@example.invalid');
  set request.jwt.claims='{{"sub":"{O}","aal":"aal2","role":"authenticated"}}';
  insert into public.organizations(id,name,created_by) values('{A}','Synthetic A','{O}');
