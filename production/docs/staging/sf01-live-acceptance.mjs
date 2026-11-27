@@ -17,7 +17,13 @@ const rl=createInterface({input:process.stdin,output:new Writable({write(_c,_e,d
 async function secret(prompt){process.stderr.write(prompt);const value=await rl.question("");process.stderr.write("\n");return value}
 const clients=[];
 function pass(label){console.log("PASS "+label)}
-function denied(r,label){assert.ok(r.error||!r.data||(Array.isArray(r.data)&&r.data.length===0),label)}
+function denied(r,label){
+ // A transport failure, server outage or malformed response is NOT an authorization pass.
+ if(!r.error){assert.ok(Array.isArray(r.data)&&r.data.length===0,label);return}
+ const code=String(r.error.code||"");
+ const status=Number(r.error.statusCode||r.error.status||0);
+ assert.ok(code==="42501"||[401,403,404].includes(status),label+": denial not established");
+}
 async function authenticate(f){
  const client=createClient(URL,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});clients.push(client);
  const password=await secret(f.label+" staging password (hidden): ");
