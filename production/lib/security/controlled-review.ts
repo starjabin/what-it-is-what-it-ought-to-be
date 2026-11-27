@@ -16,6 +16,7 @@ export async function controlledReview(input:Input,deps:{
  const ids={requestId:input.requestId,orgId:input.scope.orgId,actorId:input.verifiedActorId};
  const emit=(event:Parameters<typeof eventRecord>[1],reason:Parameters<typeof eventRecord>[2])=>deps.audit(eventRecord(ids,event,reason));
  let reason:Parameters<typeof eventRecord>[2]="scope";
+ let committed=false;
  try{
   authorizeReview(input.scope,input.verifiedActorId,input.contract,[...input.evidence,...input.obligations]);
   assertReviewCapability("propose-under-review");
@@ -41,9 +42,10 @@ export async function controlledReview(input:Input,deps:{
    reason="persistence";
    if(!result.grounded)throw Error("Review not grounded");
    await deps.commit(r.jobId,result);
+   committed=true;
    // A completion audit failure is an explicit reconciliation error, not a refund or failed commit.
    try { await emit("completed","none"); } catch { throw Error("Committed review; audit reconciliation required"); }
    return result;
-  }catch(e){await r.fail();throw e;}
- }catch(e){await emit("blocked",reason);throw e;}
+  }catch(e){if(!committed)await r.fail();throw e;}
+ }catch(e){if(!committed)await emit("blocked",reason);throw e;}
 }
