@@ -1,4 +1,6 @@
+import {legacyDispatchAllowed} from "@/lib/security/security-events";
 import OpenAI from "openai";
+import {requireConfiguredModel} from "@/lib/security/trusted-registry";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 
@@ -6,14 +8,16 @@ export const runtime="nodejs";
 export const maxDuration=30;
 
 export async function GET(){
+  if(!legacyDispatchAllowed())return NextResponse.json({error:"AI execution is held pending controlled staging integration.",code:"AI_SECURITY_HOLD"},{status:503});
   const supabase=await createClient();
   if(!supabase)return NextResponse.json({ok:false,status:"unconfigured"},{status:503});
   const {data:claims}=await supabase.auth.getClaims();
   if(!claims?.claims)return NextResponse.json({error:"Sign in is required."},{status:401});
   if(!process.env.OPENAI_API_KEY)return NextResponse.json({ok:false,status:"unconfigured"},{status:503});
 
-  const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
   const model=process.env.CUSTOMER_ASSISTANT_MODEL||"gpt-6-luna";
+  try {requireConfiguredModel(model,"health-check");} catch {return NextResponse.json({ok:false,status:"model_not_approved"},{status:503});}
+  const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
   try{
     await client.responses.create({
       model,

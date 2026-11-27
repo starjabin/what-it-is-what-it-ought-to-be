@@ -2,25 +2,81 @@ name: Production CI
 
 on:
   push:
+    branches: [main, 'dev/**']
+  pull_request:
     branches: [main]
   workflow_dispatch:
+
+# No third-party actions or write tokens. This repository is currently public.
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: "22"
-      - name: Install
-        run: npm install
+      - name: Fetch exact public commit without external actions
+        shell: bash
+        run: |
+          test "$GITHUB_REPOSITORY" = "starjabin/what-it-is-what-it-ought-to-be"
+          [[ "$GITHUB_SHA" =~ ^[a-f0-9]{40}$ ]]
+          git init .
+          git fetch --no-tags --depth=1 https://github.com/starjabin/what-it-is-what-it-ought-to-be.git "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Verify runtime
+        run: |
+          node --version
+          node -e 'if(Number(process.versions.node.split(".")[0])<22)process.exit(1)'
+      - name: Validate dependency registry and lock integrity
         working-directory: production
+        run: node security/verify-supply-chain.mjs
+      - name: Verify trusted registry and local artifact digests
+        working-directory: production
+        run: node security/verify-registry.mjs
+      - name: Validate security control register
+        working-directory: production
+        run: node security/check-control-register.mjs
+      - name: Verify application-wide compliance inventory
+        working-directory: production
+        run: node security/check-compliance.mjs
+      - name: Basic tracked credential scan
+        run: node production/security/scan-tracked-secrets.mjs
+      - name: Pure agent and reservation tests
+        working-directory: production
+        run: node --experimental-strip-types --test tests/*.test.mjs
+      - name: Disposable PostgreSQL reservation acceptance
+        run: python3 production/docs/staging/gc05-postgres-acceptance.py
+      - name: Canonical schema and two-tenant policy acceptance
+        run: python3 production/docs/staging/phase1-canonical-acceptance.py
+      - name: Install exact dependencies without lifecycle scripts
+        working-directory: production
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/
+      - name: Vulnerability gate (high and critical)
+        working-directory: production
+        run: npm audit --audit-level=high --registry=https://registry.npmjs.org/
+      - name: Verify npm registry signatures
+        working-directory: production
+        run: npm audit signatures --registry=https://registry.npmjs.org/
+      - name: Generate CycloneDX SBOM
+        working-directory: production
+        run: |
+          npm sbom --sbom-format cyclonedx > "$RUNNER_TEMP/gap-sbom.json"
+          node -e 'const s=require(process.env.RUNNER_TEMP+"/gap-sbom.json"); console.log("SBOM components:",s.components.length); if(!s.components.length)process.exit(1)'
+          sha256sum "$RUNNER_TEMP/gap-sbom.json"
       - name: Typecheck
+        working-directory: production
         run: npm run typecheck
-        working-directory: production
       - name: Build
-        run: npm run build
         working-directory: production
+        run: npm run build
+      - name: Chromium responsive and interaction acceptance
+        working-directory: production
+        run: node tests/browser-acceptance.mjs
+      - name: Main branch independent inventory approval gate
+        if: github.ref == 'refs/heads/main'
+        working-directory: production
+        run: |
+          node security/verify-registry.mjs --release
+          node security/check-control-register.mjs --release
+          node security/check-compliance.mjs --release

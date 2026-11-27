@@ -1,0 +1,666 @@
+{
+  "schemaVersion": 1,
+  "scope": "entire-application-and-operating-organization",
+  "releasePolicy": "independent-evidence-required",
+  "certificationStatus": "not-certified",
+  "controls": [
+    {
+      "id": "CMP-01",
+      "framework": "ISO/IEC 27001:2022",
+      "objective": "ISMS scope, leadership, risk assessment, treatment and statement of applicability",
+      "ownerRole": "Information Security Lead",
+      "requiredEvidence": [
+        "Approved scope and risk methodology",
+        "Risk register and treatment plan",
+        "Statement of applicability against licensed standard",
+        "Management review and independent internal audit"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-02",
+      "framework": "ISO/IEC 42001:2023",
+      "objective": "AI management system, inventory, impact assessment, accountability, evaluation and lifecycle",
+      "ownerRole": "AI Governance Lead",
+      "requiredEvidence": [
+        "Approved AI policy and inventory",
+        "AI impact and risk assessment",
+        "Provider due diligence and evaluation",
+        "Independent management system audit"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-03",
+      "framework": "ISO/IEC 25010:2023",
+      "objective": "Product quality across functional suitability, performance, compatibility, interaction, reliability, security, maintainability, flexibility and safety",
+      "ownerRole": "Product Quality Lead",
+      "requiredEvidence": [
+        "Quality requirements mapped to complete journeys",
+        "Measured acceptance and reliability",
+        "Maintainability and recovery evidence"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-04",
+      "framework": "WCAG 2.2 AA",
+      "objective": "Full pages and complete processes, including error and authentication flows",
+      "ownerRole": "Accessibility Lead",
+      "requiredEvidence": [
+        "Criterion-level automated and manual assessment",
+        "Assistive technology and keyboard testing",
+        "Complete journey conformance assessment"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-05",
+      "framework": "OWASP ASVS 5.0.0 Level 2 target",
+      "objective": "Application security requirements including identity, access, data, APIs and business logic",
+      "ownerRole": "Application Security Lead",
+      "requiredEvidence": [
+        "Requirement-level applicability and verification",
+        "Independent penetration testing",
+        "Two-tenant live access tests and remediation"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-06",
+      "framework": "NIST SSDF SP 800-218",
+      "objective": "Secure development governance, protected source, secure production and vulnerability response",
+      "ownerRole": "DevSecOps Lead",
+      "requiredEvidence": [
+        "Reviewed SBOM and provenance",
+        "Protected branches and independent approval",
+        "Vulnerability handling and secure release evidence"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-07",
+      "framework": "Saudi PDPL and implementing regulations",
+      "objective": "Controller/processor obligations, processing records, rights, transfer and retention assessment",
+      "ownerRole": "Privacy Lead",
+      "requiredEvidence": [
+        "Legal applicability and controller/processor roles",
+        "Processing register and lawful basis",
+        "Rights requests, retention and deletion verification",
+        "Cross-border transfer and supplier review"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-08",
+      "framework": "Core Web Vitals",
+      "objective": "Field p75 LCP, INP and CLS by device class",
+      "ownerRole": "Performance Lead",
+      "requiredEvidence": [
+        "Production-like field measurement with privacy controls",
+        "Measured p75 LCP/INP/CLS and budgets"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-09",
+      "framework": "Internationalization and compatibility",
+      "objective": "Complete English/Arabic workflows, browsers, devices and formats",
+      "ownerRole": "Localization and QA Lead",
+      "requiredEvidence": [
+        "Reviewed translations and legal terminology",
+        "Chromium Firefox WebKit and physical device tests",
+        "Date, number, currency and RTL acceptance"
+      ],
+      "status": "not-accepted"
+    },
+    {
+      "id": "CMP-10",
+      "framework": "Independent certification and release",
+      "objective": "Scope-specific accredited certification and release authorization",
+      "ownerRole": "Executive Sponsor",
+      "requiredEvidence": [
+        "Legal entity and audit scope approved",
+        "Accredited certification body engagement",
+        "Stage 1 and Stage 2 audit and findings closure",
+        "Valid certificate and independently approved release"
+      ],
+      "status": "not-accepted"
+    }
+  ],
+  "routes": [
+    {
+      "path": "app/actions/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/analyst/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/api/ai/analyze/route.ts",
+      "scope": "held",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Held on development branch pending reviewed integration."
+    },
+    {
+      "path": "app/api/ai/health/route.ts",
+      "scope": "held",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Held on development branch pending reviewed integration."
+    },
+    {
+      "path": "app/api/customer-assistant/route.ts",
+      "scope": "retired",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/api/documents/process/route.ts",
+      "scope": "held",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Held on development branch pending reviewed integration."
+    },
+    {
+      "path": "app/api/email/document-assignment/route.ts",
+      "scope": "held",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Held on development branch pending reviewed integration."
+    },
+    {
+      "path": "app/api/email/team-invitation/route.ts",
+      "scope": "held",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Held on development branch pending reviewed integration."
+    },
+    {
+      "path": "app/api/health/route.ts",
+      "scope": "public-api",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/api/internal-assistant/route.ts",
+      "scope": "tenant-api",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/api/onboarding/route.ts",
+      "scope": "tenant-api",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/api/staging-graph/route.ts",
+      "scope": "synthetic-staging",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Synthetic data only; not customer acceptance."
+    },
+    {
+      "path": "app/assistant/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/audit/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/auth/callback/route.ts",
+      "scope": "public-api",
+      "status": "not-accepted",
+      "ownerRole": "Backend Security",
+      "requiredEvidence": [
+        "input-output-contract",
+        "authorization-and-abuse",
+        "negative-and-recovery-tests",
+        "privacy-and-audit"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/billing/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/communication/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/contracts/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/dashboard/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/documents/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/dpa/page.tsx",
+      "scope": "public",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/evidence/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/flow/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/gaps/[id]/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/gaps/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/join/[token]/page.tsx",
+      "scope": "public",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/notifications/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/obligations/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/onboarding/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/page.tsx",
+      "scope": "public",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/privacy/page.tsx",
+      "scope": "public",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/projects/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/reports/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/settings/ai/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/sign-in/page.tsx",
+      "scope": "public",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/sign-up/page.tsx",
+      "scope": "public",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/staging-graph/page.tsx",
+      "scope": "synthetic-staging",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Synthetic data only; not customer acceptance."
+    },
+    {
+      "path": "app/team/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/terms/page.tsx",
+      "scope": "public",
+      "status": "not-accepted",
+      "ownerRole": "Frontend QA",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Route included in assessment scope; independent evidence pending."
+    },
+    {
+      "path": "app/mfa/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Identity and Security",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Staging identity candidate. Live provider not yet configured."
+    },
+    {
+      "path": "app/workspace-select/page.tsx",
+      "scope": "tenant",
+      "status": "not-accepted",
+      "ownerRole": "Identity and Security",
+      "requiredEvidence": [
+        "complete-process-functional-test",
+        "accessibility-manual-and-automated",
+        "localization-and-cross-browser",
+        "privacy-and-authorization"
+      ],
+      "notes": "Staging identity candidate. Live provider not yet configured."
+    }
+  ]
+}

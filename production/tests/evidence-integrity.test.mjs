@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {verifyEvidenceBlob,MAX_EVIDENCE_BYTES} from "../lib/security/evidence-integrity.ts";
+const original=new Blob(["abc"]);
+const record={content_hash:"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",byte_size:3};
+test("verified bytes match recorded SHA-256 and size",async()=>{await verifyEvidenceBlob(original,record);await verifyEvidenceBlob(original,{...record,content_hash:record.content_hash.toUpperCase()})});
+test("same-length changed bytes are rejected",async()=>assert.rejects(verifyEvidenceBlob(new Blob(["abd"]),record),/SHA-256 mismatch/));
+test("truncated or extended bytes are rejected",async()=>{await assert.rejects(verifyEvidenceBlob(new Blob(["ab"]),record),/size mismatch/);await assert.rejects(verifyEvidenceBlob(new Blob(["abcd"]),record),/size mismatch/)});
+test("missing or invalid fingerprint fails closed",async()=>{for(const hash of [null,"","abc","g".repeat(64)])await assert.rejects(verifyEvidenceBlob(original,{...record,content_hash:hash}),/fingerprint/)});
+test("missing, invalid or oversized registered byte size fails closed",async()=>{for(const size of [null,-1,1.5,MAX_EVIDENCE_BYTES+1])await assert.rejects(verifyEvidenceBlob(original,{...record,byte_size:size}),/fingerprint/)});

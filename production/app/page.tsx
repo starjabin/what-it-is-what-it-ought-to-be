@@ -26,7 +26,7 @@ export default function Home(){
       <nav className="marketingLinks">
         <a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#pricing">Pricing</a><a href="#security">Security</a>
       </nav>
-      <div className="navActions"><Link className="btn subtle" href="/sign-in">Sign in</Link><Link className="btn primary" href="/sign-in">Start workspace</Link></div>
+      <div className="navActions">{process.env.GAP_GRAPH_MODE==="synthetic-staging"&&<Link className="btn subtle" href="/staging-graph">Graph Control Center</Link>}<Link className="btn subtle" href="/sign-in">Sign in</Link><Link className="btn primary" href="/sign-in">Start workspace</Link></div>
     </header>
 
     <section className="marketingHero">

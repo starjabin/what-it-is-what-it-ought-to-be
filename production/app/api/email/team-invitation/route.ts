@@ -1,8 +1,11 @@
+import {outboundEmailAccepted} from "@/lib/security/outbound-policy";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
 export const runtime="nodejs";
 
 export async function POST(request:Request){
+  // Independent privacy, authorization, recipient, escaping and abuse controls are not yet accepted.
+  if(!outboundEmailAccepted())return NextResponse.json({error:"Outbound email held pending compliance acceptance.",code:"EMAIL_SECURITY_HOLD"},{status:503});
   if(!process.env.RESEND_API_KEY)return NextResponse.json({error:"Email service is not configured."},{status:503});
   const supabase=await createClient();if(!supabase)return NextResponse.json({error:"Authentication is not configured."},{status:503});
   const {data:claims}=await supabase.auth.getClaims();if(!claims?.claims)return NextResponse.json({error:"Sign in is required."},{status:401});
@@ -20,6 +23,6 @@ export async function POST(request:Request){
     from,to:[invite.email],subject:"You have been invited to "+(org?.name||"a contract intelligence workspace"),
     html:`<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#102a43"><h2>Join ${org?.name||"your team"}</h2><p>You have been invited as <b>${String(invite.role).replaceAll("_"," ")}</b> to a What It Is / What It Ought to Be workspace.</p><p>Use the secure invitation link below. It expires on ${new Date(invite.expires_at).toLocaleDateString()}.</p><p><a href="${joinUrl}" style="display:inline-block;background:#2f6fed;color:white;text-decoration:none;padding:12px 18px;border-radius:8px">Accept invitation</a></p><p style="font-size:12px;color:#667085">If you were not expecting this invitation, you can ignore this email.</p></div>`
   })});
-  if(!res.ok){const detail=await res.text();console.error("resend-team-invite",detail);return NextResponse.json({error:"Email provider rejected the message."},{status:502})}
+  if(!res.ok){console.error("outbound-email-provider-rejected");return NextResponse.json({error:"Email provider rejected the message."},{status:502})}
   return NextResponse.json({ok:true});
 }

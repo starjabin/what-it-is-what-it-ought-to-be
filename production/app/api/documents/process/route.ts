@@ -1,6 +1,10 @@
+import {legacyDispatchAllowed} from "@/lib/security/security-events";
 import OpenAI from "openai";
+import {requireConfiguredModel} from "@/lib/security/trusted-registry";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
+import {verifiedMfaSubject} from "@/lib/security/session-scope";
+import {verifyEvidenceBlob} from "@/lib/security/evidence-integrity";
 
 export const runtime="nodejs";
 export const maxDuration=300;
@@ -73,13 +77,15 @@ function classifyAIError(error:unknown){
 }
 
 export async function POST(request:Request){
+  if(!legacyDispatchAllowed())return NextResponse.json({error:"AI execution is held pending controlled staging integration.",code:"AI_SECURITY_HOLD"},{status:503});
   if(!process.env.OPENAI_API_KEY)return NextResponse.json({error:"OpenAI is not configured."},{status:503});
   const supabase=await createClient();
   if(!supabase)return NextResponse.json({error:"Authentication is not configured."},{status:503});
 
   const {data:claims}=await supabase.auth.getClaims();
   if(!claims?.claims)return NextResponse.json({error:"Sign in is required."},{status:401});
-  const userId=String(claims.claims.sub);
+  const userId=verifiedMfaSubject(claims.claims);
+  if(!userId)return NextResponse.json({error:"Verified MFA session required."},{status:403});
   const body=await request.json().catch(()=>null) as {documentId?:string}|null;
   if(!body?.documentId)return NextResponse.json({error:"Document is required."},{status:400});
 
@@ -95,27 +101,32 @@ export async function POST(request:Request){
     return NextResponse.json({error:"Contract Manager, Admin or Owner permission is required to process a contract."},{status:403});
   }
 
-  let versionId=doc.current_version_id as string|null;
-  let storagePath=doc.storage_path as string;
-  if(versionId){
-    const {data:version}=await supabase.from("document_versions")
-      .select("id,storage_path,processing_status").eq("id",versionId).maybeSingle();
-    if(version?.storage_path)storagePath=version.storage_path;
-  }else{
-    const {data:version}=await supabase.from("document_versions")
-      .select("id,storage_path").eq("document_id",doc.id).eq("is_current",true).maybeSingle();
-    if(version){versionId=version.id;storagePath=version.storage_path}
-  }
-  if(!versionId)return NextResponse.json({error:"Document revision record is missing."},{status:409});
-
-  await supabase.from("document_versions").update({processing_status:"processing",processing_error:null}).eq("id",versionId);
-  const {data:signed,error:signedError}=await supabase.storage.from("contract-evidence").createSignedUrl(storagePath,900);
-  if(signedError||!signed?.signedUrl){
-    await supabase.from("document_versions").update({processing_status:"failed",processing_error:"Could not create secure source URL."}).eq("id",versionId);
-    return NextResponse.json({error:"Could not access the stored contract."},{status:500});
-  }
-
   const model=process.env.OPENAI_MODEL||"gpt-6.1-sol";
+  try {requireConfiguredModel(model,"document-extraction");} catch {return NextResponse.json({error:"AI model is not approved for this environment and task.",code:"AI_MODEL_NOT_APPROVED"},{status:503});}
+
+  // Legacy dispatch remains hard-held. A future approved adapter must use the same verified bytes,
+  // never a mutable URL fetched a second time by a provider.
+  if(!doc.current_version_id)return NextResponse.json({error:"Document revision record is missing."},{status:409});
+  const {data:version,error:versionError}=await supabase.from("document_versions")
+    .select("id,storage_path,file_name,content_hash,byte_size,mime_type")
+    .eq("id",doc.current_version_id).eq("document_id",doc.id).eq("organization_id",doc.organization_id).eq("is_current",true).single();
+  if(versionError||!version)return NextResponse.json({error:"Current revision unavailable."},{status:409});
+  const versionId=version.id;
+  // Hold unsupported input and large payloads; do not assume provider acceptance.
+  if(version.mime_type!=="application/pdf"||typeof version.byte_size!=="number"||version.byte_size>20*1024*1024)
+    return NextResponse.json({error:"Only bounded PDF extraction is eligible for the future approved adapter."},{status:409});
+  let verifiedFileData:string;
+  try {
+    const {data:source,error:sourceError}=await supabase.storage.from("contract-evidence").download(version.storage_path);
+    if(sourceError||!source)throw Error("Source unavailable");
+    await verifyEvidenceBlob(source,version);
+    verifiedFileData="data:application/pdf;base64,"+Buffer.from(await source.arrayBuffer()).toString("base64");
+  }catch{
+    return NextResponse.json({error:"Source integrity not established. Evidence held for review.",code:"EVIDENCE_INTEGRITY_HOLD"},{status:409});
+  }
+  const {error:stateError}=await supabase.from("document_versions").update({processing_status:"processing",processing_error:null}).eq("id",versionId);
+  if(stateError)return NextResponse.json({error:"Could not record processing state."},{status:409});
+
   const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
 
   let aiRunPersisted=false;
@@ -136,7 +147,7 @@ export async function POST(request:Request){
         role:"user",
         content:[
           {type:"input_text",text:"Extract the contract structure, defined terms and obligations from this file. Preserve exact source locators and explicitly list missing information."},
-          {type:"input_file",file_url:signed.signedUrl}
+          {type:"input_file",filename:version.file_name,file_data:verifiedFileData}
         ]
       }] as any,
       text:{format:{type:"json_schema",name:"contract_structure",strict:true,schema:extractionSchema as any}}
@@ -236,7 +247,7 @@ export async function POST(request:Request){
       missing_information:parsed.missing_information
     });
   }catch(error){
-    console.error("contract-processing",error);
+    console.error("ai-operation-failed");
     const classified=classifyAIError(error);
     if(!aiRunPersisted){
       await supabase.from("ai_runs").insert({

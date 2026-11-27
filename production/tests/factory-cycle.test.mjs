@@ -1,0 +1,6 @@
+import test from "node:test";import assert from "node:assert/strict";import {FACTORY_CELLS,reconcileFactory} from "../lib/ai/factory-cycle.ts";
+const records=()=>FACTORY_CELLS.map(cell=>({cell,phases:Object.fromEntries(["planner","coder","tester","reviewer"].map(p=>[p,{state:"verified",reference:"synthetic fixture"}])),blocker:"",nextAction:"independent approval",repairAttempts:0}));
+test("every work cell must be reconciled exactly once",()=>{assert.throws(()=>reconcileFactory(records().slice(1)));const r=records();r[1]=r[0];assert.throws(()=>reconcileFactory(r))});
+test("complete technical evidence cannot authorize production",()=>{assert.deepEqual(reconcileFactory(records()),{cellsReconciled:6,pending:[],readyForIndependentReview:true,productionAuthorized:false})});
+test("blocked or untested phase requires explicit blocker",()=>{const r=records();r[0].phases.tester.state="implemented-untested";assert.throws(()=>reconcileFactory(r));r[0].blocker="live MFA unavailable";assert.deepEqual(reconcileFactory(r).pending,["identity-tenant"])});
+test("missing phase reference and excess repairs rejected",()=>{const r=records();r[1].phases.reviewer.reference="";assert.throws(()=>reconcileFactory(r));const q=records();q[0].repairAttempts=3;assert.throws(()=>reconcileFactory(q))});

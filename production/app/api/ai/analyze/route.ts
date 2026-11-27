@@ -1,6 +1,9 @@
+import {legacyDispatchAllowed} from "@/lib/security/security-events";
 import OpenAI from "openai";
+import {requireConfiguredModel} from "@/lib/security/trusted-registry";
 import {NextResponse} from "next/server";
 import {createClient} from "@/lib/supabase/server";
+import {reviewInstructions, validateEvidenceIds} from "@/lib/ai/agent-foundation";
 
 export const runtime="nodejs";
 export const maxDuration=120;
@@ -39,6 +42,7 @@ function classifyAIError(error:unknown){
 }
 
 export async function POST(request:Request){
+  if(!legacyDispatchAllowed())return NextResponse.json({error:"AI execution is held pending controlled staging integration.",code:"AI_SECURITY_HOLD"},{status:503});
   if(!process.env.OPENAI_API_KEY){
     return NextResponse.json({error:"AI analysis is not configured.",code:"AI_NOT_CONFIGURED"},{status:503});
   }
@@ -50,17 +54,20 @@ export async function POST(request:Request){
   if(!claims?.claims)return NextResponse.json({error:"Sign in is required."},{status:401});
   const userId=String(claims.claims.sub);
 
+  const body=await request.json().catch(()=>null) as {contractId?:string;objective?:string}|null;
+  if(!body?.contractId)return NextResponse.json({error:"Contract is required."},{status:400});
+  const {data:targetContract}=await supabase.from("contracts").select("organization_id").eq("id",body.contractId).maybeSingle();
+  if(!targetContract)return NextResponse.json({error:"Contract not found."},{status:404});
   const {data:membership}=await supabase.from("organization_members")
     .select("organization_id,role")
-    .eq("user_id",userId).limit(1).maybeSingle();
+    .eq("user_id",userId).eq("organization_id",targetContract.organization_id).maybeSingle();
 
   if(!membership?.organization_id)return NextResponse.json({error:"Create a workspace first."},{status:403});
   if(!["owner","admin","contract_manager","contributor","reviewer"].includes(String(membership.role))){
     return NextResponse.json({error:"Your role cannot initiate analysis."},{status:403});
   }
 
-  const body=await request.json().catch(()=>null) as {contractId?:string;objective?:string}|null;
-  if(!body?.contractId)return NextResponse.json({error:"Contract is required."},{status:400});
+
   const objective=String(body.objective||"").trim().slice(0,600);
   if(!objective)return NextResponse.json({error:"Analysis objective is required."},{status:400});
 
@@ -106,7 +113,7 @@ export async function POST(request:Request){
   // Gate 2 — reviewed extraction. Only READY revisions can feed later gates.
   const {data:readyVersions}=await supabase.from("document_versions")
     .select("id").eq("organization_id",membership.organization_id)
-    .in("document_id",documentIds).eq("processing_status","ready");
+    .in("document_id",documentIds).eq("is_current",true).eq("processing_status","ready");
   const readyVersionIds=(readyVersions||[]).map(v=>v.id);
 
   if(!readyVersionIds.length){
@@ -175,6 +182,7 @@ export async function POST(request:Request){
   }));
 
   const model=aiSettings?.reasoning_model||aiSettings?.main_model||process.env.OPENAI_MODEL||"gpt-6.1-sol";
+  try {requireConfiguredModel(model,"contract-review");} catch {return NextResponse.json({error:"AI model is not approved for this environment and task.",code:"AI_MODEL_NOT_APPROVED"},{status:503});}
   const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY});
   let runPersisted=false;
 
@@ -192,7 +200,8 @@ export async function POST(request:Request){
         "WHAT IT OUGHT TO BE must be grounded in REVIEWED OBLIGATIONS / OUGHT.",
         "evidence_ids MUST contain only IDs from EVIDENCE RECORDS and must directly support the proposed Gap.",
         "If the records do not support a material Gap, say so and list the missing information.",
-        "Return an Under Review proposal only. Never approve it, send correspondence, or state legal certainty."
+        "Return an Under Review proposal only. Never approve it, send correspondence, or state legal certainty.",
+        "Apply these read-only review disciplines in this single call; do not claim separate agents executed:\n"+reviewInstructions()
       ].join("\n"),
       input:
         "Contract: "+contract.title+
@@ -204,7 +213,7 @@ export async function POST(request:Request){
 
     const proposal=JSON.parse(response.output_text) as any;
     const allowed=new Set(evidence.map(e=>e.id));
-    proposal.evidence_ids=(proposal.evidence_ids||[]).filter((id:string)=>allowed.has(id));
+    proposal.evidence_ids=validateEvidenceIds(proposal.evidence_ids,allowed);
     proposal.status="Under Review";
 
     const {data:run,error:runError}=await supabase.from("ai_runs").insert({
@@ -284,7 +293,7 @@ export async function POST(request:Request){
       citation_count:chosen.length
     });
   }catch(error){
-    console.error("gap-analysis",error);
+    console.error("gap-analysis-failed");
     const classified=classifyAIError(error);
 
     if(!runPersisted){

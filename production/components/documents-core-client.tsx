@@ -1,7 +1,10 @@
 "use client";
+import {StandardTable,TableRegion,FormFeedback} from "@/components/standard-primitives";
+
 import {FormEvent,useMemo,useRef,useState} from "react";
 import Link from "next/link";
 import {createClient} from "@/lib/supabase/client";
+import {verifyEvidenceBlob} from "@/lib/security/evidence-integrity";
 type Doc={id:string;project_id:string|null;contract_id:string|null;file_name:string;document_type:string|null;storage_path:string;content_hash:string|null;version_no:number;current_version_id:string|null;processing_status:string;created_at:string};
 type Version={id:string;document_id:string;version_no:number;file_name:string;storage_path:string;content_hash:string|null;mime_type:string|null;byte_size:number|null;processing_status:string;processing_error:string|null;is_current:boolean;created_at:string;extracted_at:string|null};
 type Project={id:string;code:string;name:string};
@@ -28,6 +31,11 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
    const digest=hex(await crypto.subtle.digest("SHA-256",await file.arrayBuffer()));
    const {data:dup}=await s.from("document_versions").select("id,document_id,file_name").eq("organization_id",orgId).eq("content_hash",digest).limit(1).maybeSingle();
    if(dup)throw new Error("Exact duplicate detected. This file already exists as "+dup.file_name+".");
+   if(revisionOf){
+    const {data:parent,error:parentError}=await s.from("documents").select("id,project_id,contract_id,document_type").eq("id",revisionOf).eq("organization_id",orgId).single();
+    if(parentError||!parent)throw Error("Revision parent unavailable or access denied.");
+    if(parent.project_id!==projectId||parent.contract_id!==contractId||parent.document_type!==type)throw Error("A revision must preserve its document project, contract and type. Create a separate document for a different scope.");
+   }
    const docId=revisionOf||crypto.randomUUID();
    const current=revisionOf?Math.max(0,...versions.filter(v=>v.document_id===revisionOf).map(v=>v.version_no)):0;
    const versionNo=current+1,versionId=crypto.randomUUID(),safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
@@ -36,17 +44,13 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
    if(up.error)throw up.error;
    if(!revisionOf){
     const {error}=await s.from("documents").insert({id:docId,organization_id:orgId,project_id:projectId,contract_id:contractId,file_name:file.name,document_type:type,storage_path:path,content_hash:digest,version_no:versionNo,uploaded_by:userId,processing_status:"queued"});
-    if(error){await s.storage.from("contract-evidence").remove([path]);throw error}
+    if(error){throw Error("Source uploaded but document registration failed. Do not retry blindly. Request governed orphan review.")}
    }
    const {data:version,error:versionError}=await s.from("document_versions").insert({id:versionId,organization_id:orgId,document_id:docId,version_no:versionNo,file_name:file.name,storage_path:path,mime_type:file.type||null,byte_size:file.size,content_hash:digest,processing_status:"queued",is_current:true,created_by:userId}).select("*").single();
-   if(versionError){if(!revisionOf)await s.from("documents").delete().eq("id",docId);await s.storage.from("contract-evidence").remove([path]);throw versionError}
-   if(revisionOf){
-    const {error}=await s.from("documents").update({project_id:projectId,contract_id:contractId,document_type:type}).eq("id",docId);
-    if(error)throw error;
-   }
+   if(versionError){throw Error("Source uploaded but revision registration was not confirmed. Reconcile the document and stored source before retrying.")}
    const {data:doc}=await s.from("documents").select("id,project_id,contract_id,file_name,document_type,storage_path,content_hash,version_no,current_version_id,processing_status,created_at").eq("id",docId).single();
    if(doc)setDocs(x=>[doc as Doc,...x.filter(d=>d.id!==docId)]);
-   setVersions(x=>[version as Version,...x.filter(v=>!(v.document_id===docId&&v.id===versionId))]);setSelected(docId);form.reset();setMessage("Immutable revision uploaded. Run contract processing when the source is ready.");
+   setVersions(x=>[version as Version,...x.filter(v=>!(v.document_id===docId&&v.id===versionId))]);setSelected(docId);form.reset();setMessage("Revision registered. Verify and download its stored bytes before use. Live AI processing remains held.");
   }catch(error){setMessage(error instanceof Error?error.message:"Upload failed safely.")}
   finally{setBusy(false)}
  }
@@ -70,7 +74,20 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
   }
   finally{setBusy(false)}
  }
- async function openVersion(v:Version){const s=createClient();if(!s)return;const {data,error}=await s.storage.from("contract-evidence").createSignedUrl(v.storage_path,120);if(error){setMessage(error.message);return}window.open(data.signedUrl,"_blank","noopener,noreferrer")}
+ async function openVersion(v:Version){
+  if(busy)return;setBusy(true);setMessage("");
+  try{
+   const s=createClient();if(!s)throw Error("Storage service unavailable.");
+   const {data:source,error:lookupError}=await s.from("document_versions").select("id,document_id,file_name,storage_path,content_hash,byte_size").eq("id",v.id).eq("organization_id",orgId).eq("document_id",v.document_id).single();
+   if(lookupError||!source)throw Error("Revision unavailable or access denied.");
+   const {data:blob,error}=await s.storage.from("contract-evidence").download(source.storage_path);
+   if(error||!blob)throw Error("Stored source unavailable or access denied.");
+   await verifyEvidenceBlob(blob,source);
+   const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=source.file_name;a.rel="noopener noreferrer";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+   setMessage("SHA-256 and byte size verified. Original source downloaded.");
+  }catch(error){setMessage(error instanceof Error?error.message:"Verification failed. Source held for review.");}
+  finally{setBusy(false)}
+ }
  async function assign(e:FormEvent<HTMLFormElement>){
    e.preventDefault();if(busy)return;setBusy(true);setMessage("");
    const form=e.currentTarget,f=new FormData(form),docId=String(f.get("document")||selected),assignee=String(f.get("assignee")||"")||null,instruction=String(f.get("instruction")||"").trim(),priority=String(f.get("priority")||"Normal"),due=String(f.get("due")||"")||null;
@@ -109,7 +126,7 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
  const contractOptions=contracts.filter(c=>!selectedDoc?.project_id||c.project_id===selectedDoc.project_id);
  return <div className="documentsLayout">
   <section className="card"><div className="cardHead"><div><h2>Document register</h2><div className="muted">{docs.length} logical document{docs.length===1?"":"s"} · immutable revisions retained</div></div><Link className="btn" href="/obligations">Review extraction →</Link></div><div className="docList">{docs.length===0?<div className="emptyState">Upload the first contract package.</div>:docs.map(d=><button type="button" key={d.id} className={selected===d.id?"docRow active":"docRow"} onClick={()=>setSelected(d.id)}><div className="docIcon">DOC</div><div><b>{d.file_name}</b><span>{d.document_type||"Unclassified"} · {projects.find(p=>p.id===d.project_id)?.code||"General"} · v{d.version_no}</span><span className="meta">{contracts.find(c=>c.id===d.contract_id)?.title||"Project evidence"} · {d.processing_status}</span></div><div className="docActions"><span>{d.processing_status}</span></div></button>)}</div>
-   {selectedDoc&&<div className="revisionPanel"><div className="cardHead"><h3>Revision history</h3>{selectedDoc.contract_id&&<button className="btn primary" onClick={()=>processDocument(selectedDoc)} disabled={busy}>{busy?"Processing…":"Process current revision"}</button>}</div>{selectedVersions.map(v=><div className="revisionRow" key={v.id}><div><b>v{v.version_no} · {v.file_name}</b><span>{new Date(v.created_at).toLocaleString()} · {v.processing_status}{v.processing_error?" · "+v.processing_error:""}</span></div><button className="btn" onClick={()=>openVersion(v)}>Open source</button></div>)}</div>}
+   {selectedDoc&&<div className="revisionPanel"><div className="cardHead"><h3>Revision history</h3>{selectedDoc.contract_id&&<button className="btn primary" onClick={()=>processDocument(selectedDoc)} disabled={busy}>{busy?"Processing…":"Process current revision"}</button>}</div>{selectedVersions.map(v=><div className="revisionRow" key={v.id}><div><b>v{v.version_no} · {v.file_name}</b><span>{new Date(v.created_at).toLocaleString()} · {v.processing_status}{v.processing_error?" · "+v.processing_error:""}</span></div><button className="btn" disabled={busy} onClick={()=>void openVersion(v)}>Verify &amp; download source</button></div>)}</div>}
   </section>
   <aside className="stack"><section className="card"><div className="cardHead"><h2>Upload / new revision</h2></div><div className="cardBody"><form onSubmit={upload}>
    <label htmlFor="doc-revision">Revision of</label><select id="doc-revision" name="revisionOf" defaultValue=""><option value="">New logical document</option>{docs.map(d=><option key={d.id} value={d.id}>{d.file_name}</option>)}</select>
@@ -126,7 +143,7 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
    <div className="formTwo"><div><label htmlFor="assign-priority">Priority</label><select id="assign-priority" name="priority"><option>Normal</option><option>High</option><option>Urgent</option><option>Low</option></select></div><div><label htmlFor="assign-due">Due date</label><input id="assign-due" name="due" type="date"/></div></div>
    <button className="btn primary" style={{width:"100%",marginTop:14}} disabled={busy}>{busy?"Saving once…":"Assign & notify"}</button>
   </form></div></section></aside>
-  <section className="card wideCard"><div className="cardHead"><div><h2>Linked work</h2><div className="muted">Same canonical records shown in Messaging Center—no second assignment register.</div></div><span className="badge neutral">{assignments.filter(a=>!["Completed","Closed","Cancelled"].includes(a.status)).length} open</span></div><div className="tableWrap"><table><thead><tr><th>Document</th><th>Required action</th><th>Owner</th><th>Priority</th><th>Due</th><th>Status</th></tr></thead><tbody>{assignments.map(a=><tr key={a.id}><td><b>{docs.find(d=>d.id===a.document_id)?.file_name||"Document"}</b></td><td>{a.details||a.title}</td><td>{a.assigned_to?names[a.assigned_to]:"Unassigned"}</td><td><span className={"badge "+(a.priority==="Urgent"?"critical":a.priority==="High"?"high":"neutral")}>{a.priority}</span></td><td>{a.due_at?new Date(a.due_at).toLocaleString():"—"}</td><td><select aria-label="Work status" value={a.status} onChange={e=>changeStatus(a.id,e.target.value)}><option>Assigned</option><option>Accepted</option><option>In Progress</option><option>Waiting</option><option>Action Required</option><option>Completed</option><option>Closed</option><option>Cancelled</option></select></td></tr>)}</tbody></table></div></section>
-  {message&&<div className="notice floatingNotice">{message}</div>}
+  <section className="card wideCard"><div className="cardHead"><div><h2>Linked work</h2><div className="muted">Same canonical records shown in Messaging Center—no second assignment register.</div></div><span className="badge neutral">{assignments.filter(a=>!["Completed","Closed","Cancelled"].includes(a.status)).length} open</span></div><TableRegion label="components documents-core table 1"><StandardTable><thead><tr><th scope="col">Document</th><th scope="col">Required action</th><th scope="col">Owner</th><th scope="col">Priority</th><th scope="col">Due</th><th scope="col">Status</th></tr></thead><tbody>{assignments.map(a=><tr key={a.id}><td><b>{docs.find(d=>d.id===a.document_id)?.file_name||"Document"}</b></td><td>{a.details||a.title}</td><td>{a.assigned_to?names[a.assigned_to]:"Unassigned"}</td><td><span className={"badge "+(a.priority==="Urgent"?"critical":a.priority==="High"?"high":"neutral")}>{a.priority}</span></td><td>{a.due_at?new Date(a.due_at).toLocaleString():"—"}</td><td><select aria-label="Work status" value={a.status} onChange={e=>changeStatus(a.id,e.target.value)}><option>Assigned</option><option>Accepted</option><option>In Progress</option><option>Waiting</option><option>Action Required</option><option>Completed</option><option>Closed</option><option>Cancelled</option></select></td></tr>)}</tbody></StandardTable></TableRegion></section>
+  {message&&<FormFeedback className="notice floatingNotice">{message}</FormFeedback>}
  </div>
 }

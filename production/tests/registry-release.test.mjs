@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import {validateRegistry} from "../security/verify-registry.mjs";
+const manifest=JSON.parse(readFileSync(new URL("../security/trusted-registry.json",import.meta.url),"utf8"));
+test("actual local skill content matches registry digest",()=>assert.equal(validateRegistry(manifest).artifacts,manifest.artifacts.length));
+test("modified skill content fails registry validation",()=>assert.throws(()=>validateRegistry(manifest,{readArtifact:()=>Buffer.from("modified")}),/digest mismatch/));
+test("candidate package inventory cannot pass release approval",()=>assert.throws(()=>validateRegistry(manifest,{release:true}),/independent release approval/));
+test("duplicate registry identities fail closed",()=>{const m=structuredClone(manifest);m.artifacts.push(m.artifacts[0]);assert.throws(()=>validateRegistry(m),/duplicate/);});
+test("self-approved registry entry cannot pass",()=>{const m=structuredClone(manifest);m.artifacts[0].status="approved";m.artifacts[0].approval={requestedBy:"owner",reviewedBy:"owner",ticket:"SEC-1",expiresAt:"2027-01-01"};assert.throws(()=>validateRegistry(m),/valid review/);});

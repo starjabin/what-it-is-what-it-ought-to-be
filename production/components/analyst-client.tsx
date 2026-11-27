@@ -1,4 +1,6 @@
 "use client";
+import {FormFeedback} from "@/components/standard-primitives";
+
 
 import {FormEvent,useEffect,useMemo,useState} from "react";
 import Link from "next/link";
@@ -153,7 +155,7 @@ export function AnalystClient({scopes}:{scopes:Scope[]}){
           {busy?"Analyzing reviewed evidence…":"Generate Gap candidate"}
         </button>
         {!analysisReady&&<div className="analystDisabledNote">The analysis trigger remains locked until all four gates and provider health pass.</div>}
-        {message&&<div className="notice" style={{marginTop:12}}>{message}</div>}
+        {message&&<FormFeedback className="notice" style={{marginTop:12}}>{message}</FormFeedback>}
       </form>
     </section>
 

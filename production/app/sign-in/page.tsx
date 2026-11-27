@@ -1,4 +1,6 @@
 "use client";
+import {safeReturnPath} from "@/lib/security/safe-return-path";
+import {useLocale,LanguageSwitch} from "@/components/locale-provider";
 
 import {FormEvent,useState} from "react";
 import Link from "next/link";
@@ -6,6 +8,7 @@ import {createClient} from "@/lib/supabase/client";
 import {ChatGPTSignInButton} from "@/components/chatgpt-signin-button";
 
 export default function SignIn(){
+  const {t,locale,dir}=useLocale();
   const [message,setMessage]=useState("");
   const [busy,setBusy]=useState(false);
 
@@ -21,37 +24,37 @@ export default function SignIn(){
     setBusy(false);
     if(error){setMessage(error.message);return}
     const next=new URLSearchParams(window.location.search).get("next");
-    window.location.href=next&&next.startsWith("/")?next:"/dashboard";
+    window.location.href=safeReturnPath(next);
   }
 
-  return <main className="authShell">
+  return <main className="authShell" lang={locale} dir={dir}>
     <section className="authStory">
-      <Link href="/" className="marketingBrand lightBrand"><span className="brandMark">W</span><span>WHAT IT IS<small>WHAT IT OUGHT TO BE</small></span></Link>
+      <Link href="/" className="marketingBrand lightBrand"><span className="brandMark">W</span><span>{t("WHAT IT IS")}<small>{t("WHAT IT OUGHT TO BE")}</small></span></Link>
       <div className="authStoryCopy">
-        <div className="pill darkPill">Evidence-led contract intelligence</div>
-        <h1>Your contract system first. AI where it helps.</h1>
-        <p>ContractGap remains the system of record for contracts, evidence, obligations, gaps, actions and audit. ChatGPT is an optional supporting capability—not the foundation of the workspace.</p>
-        <div className="authBenefits"><span>✓ Independent ContractGap account</span><span>✓ Tenant-scoped contract evidence</span><span>✓ Human-controlled AI support</span><span>✓ Append-only audit trail</span></div>
+        <div className="pill darkPill">{t("Evidence-led contract intelligence")}</div>
+        <h1>{t("Your contract system first. AI where it helps.")}</h1>
+        <p>{t("ContractGap remains the system of record for contracts, evidence, obligations, gaps, actions and audit. ChatGPT is an optional supporting capability—not the foundation of the workspace.")}</p>
+        <div className="authBenefits"><span>{t("✓ Independent ContractGap account")}</span><span>{t("✓ Tenant-scoped contract evidence")}</span><span>{t("✓ Human-controlled AI support")}</span><span>{t("✓ Append-only audit trail")}</span></div>
       </div>
-      <div className="authQuote">Evidence and accountability remain usable whether or not ChatGPT sign-in is connected.</div>
+      <div className="authQuote">{t("Evidence and accountability remain usable whether or not ChatGPT sign-in is connected.")}</div>
     </section>
     <section className="authFormSide">
-      <div className="authFormBox">
-        <div className="eyebrow">Secure access</div>
-        <h2>Sign in to ContractGap</h2>
-        <p className="muted">Use your ContractGap work account. ChatGPT sign-in may be offered as an optional convenience after OpenAI approval.</p>
+      <div className="authFormBox"><LanguageSwitch/>
+        <div className="eyebrow">{t("Secure access")}</div>
+        <h2>{t("Sign in to ContractGap")}</h2>
+        <p className="muted">{t("Use your ContractGap work account. ChatGPT sign-in may be offered as an optional convenience after OpenAI approval.")}</p>
         <form onSubmit={submit}>
-          <label htmlFor="signin-email">Work email</label>
+          <label htmlFor="signin-email">{t("Work email")}</label>
           <input id="signin-email" name="email" type="email" autoComplete="email" placeholder="you@company.com" required/>
-          <label htmlFor="signin-password">Password</label>
+          <label htmlFor="signin-password">{t("Password")}</label>
           <input id="signin-password" name="password" type="password" autoComplete="current-password" placeholder="••••••••" required/>
-          <button className="btn primary authButton" type="submit" disabled={busy}>{busy?"Signing in…":"Sign in"}</button>
+          <button className="btn primary authButton" type="submit" disabled={busy}>{t(busy?"Signing in…":"Sign in")}</button>
         </form>
-        {message&&<div className="notice" style={{marginTop:12}}>{message}</div>}
+        {message&&<div role="status" aria-live="polite" className="notice" style={{marginTop:12}}>{t(message)}</div>}
         <ChatGPTSignInButton next="/dashboard"/>
-        <div className="authDivider"><span>New client?</span></div>
-        <Link className="btn authButton" href="/sign-up">Create ContractGap account</Link>
-        <div className="footerNote"><Link href="/">← Back to product site</Link></div>
+        <div className="authDivider"><span>{t("New client?")}</span></div>
+        <Link className="btn authButton" href="/sign-up">{t("Create ContractGap account")}</Link>
+        <div className="footerNote"><Link href="/">{t("← Back to product site")}</Link></div>
       </div>
     </section>
   </main>

@@ -1,0 +1,8 @@
+import test from "node:test";import assert from "node:assert/strict";
+import {safeReturnPath} from "../lib/security/safe-return-path.ts";import {readStringFields} from "../lib/security/api-input.ts";import {outboundEmailAccepted} from "../lib/security/outbound-policy.ts";
+test("local authorized navigation paths only",()=>{for(const s of ["/dashboard","/projects?view=open","/join/test-token","/gaps/00000000-0000-4000-8000-000000000001"])assert.equal(safeReturnPath(s),s);for(const s of ["//external.invalid","/\\external.invalid","/%2fexternal.invalid","/../dashboard","https://external.invalid","/auth/callback","/api/health","/dashboard\n","/dashboard/../projects",null,{}])assert.equal(safeReturnPath(s),"/dashboard");assert.equal(safeReturnPath(null,"/onboarding"),"/onboarding")});
+const req=v=>new Request("https://example.invalid",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(v)});
+test("bounded typed field reader accepts known fields and defaults",async()=>assert.deepEqual({...await readStringFields(req({name:"  Test  "}),{name:{max:20,required:true},other:{max:10}})},{name:"Test",other:""}));
+test("reject unknown fields, type confusion, missing values, overlong inputs",async()=>{for(const v of [{name:123},{name:null},{},{name:""},{name:"x".repeat(21)},{name:"test",orgId:"other"},JSON.parse('{"name":"test","__proto__":{}}')])await assert.rejects(readStringFields(req(v),{name:{max:20,required:true}}),{status:400})});
+test("byte budget enforced",async()=>await assert.rejects(readStringFields(req({name:"é".repeat(200)}),{name:{max:500}},100),{status:413}));
+test("unaccepted external email dispatch held",()=>assert.equal(outboundEmailAccepted(),false));

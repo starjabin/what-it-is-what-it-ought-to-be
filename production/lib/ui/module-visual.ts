@@ -1,0 +1,3 @@
+export type VisualKind="engineering"|"contract"|"evidence"|"analysis"|"team"|"security"|"commercial";
+const groups:Record<VisualKind,readonly string[]>={engineering:["/dashboard","/flow","/projects"],contract:["/contracts","/obligations"],evidence:["/documents","/evidence"],analysis:["/analyst","/gaps","/actions","/assistant","/staging-graph"],team:["/team","/communication","/notifications"],security:["/settings/ai","/audit"],commercial:["/billing","/reports"]};
+export function visualForPath(path:string):VisualKind{return (Object.keys(groups) as VisualKind[]).find(k=>groups[k].some(p=>path===p||path.startsWith(p+"/")))??"engineering"}

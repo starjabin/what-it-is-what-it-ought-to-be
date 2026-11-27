@@ -1,0 +1,4 @@
+import test from "node:test";import assert from "node:assert/strict";import {verifiedMfaSubject,chooseWorkspace} from "../lib/security/session-scope.ts";
+const a="10000000-0000-4000-8000-000000000001",b="10000000-0000-4000-8000-000000000002";
+test("verified AAL2 authenticated UUID required",()=>{assert.equal(verifiedMfaSubject({sub:a,role:"authenticated",aal:"aal2"}),a);for(const x of [null,{}, {sub:a,role:"authenticated",aal:"aal1"},{sub:a,role:"service_role",aal:"aal2"},{sub:"bad",role:"authenticated",aal:"aal2"}])assert.equal(verifiedMfaSubject(x),null)});
+test("explicit selection for multiple memberships and no stale or forged workspace",()=>{const m=[{organization_id:a},{organization_id:b}];assert.equal(chooseWorkspace(m,null),null);assert.equal(chooseWorkspace(m,b),m[1]);assert.equal(chooseWorkspace([m[0]],b),null);assert.equal(chooseWorkspace([],a),null);assert.equal(chooseWorkspace([m[0]],undefined),m[0]);assert.equal(chooseWorkspace([m[0],m[0]],a),null)});
