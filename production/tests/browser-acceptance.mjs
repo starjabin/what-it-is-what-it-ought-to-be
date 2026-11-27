@@ -23,7 +23,17 @@ async function intercept(p){
   let result={mode:"synthetic",runs:records};if(p.request.method==="POST"){writes++;const body=JSON.parse(p.request.postData);result={mode:"synthetic",run:{...records[0],request_id:body.requestId,observed:body.observed,required:body.required,gap:Math.max(0,body.required-body.observed),outcome:body.required>body.observed?"Under Review":"No discrepancy detected"}}}
   await send("Fetch.fulfillRequest",{requestId:p.requestId,responseCode:200,responseHeaders:[{name:"Content-Type",value:"application/json"},{name:"Cache-Control",value:"no-store"}],body:Buffer.from(JSON.stringify(result)).toString("base64")});return
  }
- await send("Fetch.continueRequest",{requestId:p.requestId})
+ // Chromium may cancel a non-mocked local resource while navigating between pages.
+ // A stale interception ID in this one continuation path is not an application failure.
+ // External blocking and synthetic API fulfillment still fail closed on every error.
+ try { await send("Fetch.continueRequest",{requestId:p.requestId}); }
+ catch(e) {
+  if(e instanceof Error && e.message==="Invalid InterceptionId.") {
+   console.log("INFO Chromium cancelled a local resource before continuation");
+   return;
+  }
+  throw e;
+ }
 }
 async function navigate(path,width){await send("Emulation.setDeviceMetricsOverride",{width,height:900,deviceScaleFactor:1,mobile:false});await send("Page.navigate",{url:base+path});await until(async()=>await evaluate(`location.pathname===${JSON.stringify(path)}&&document.readyState==="complete"&&!!document.querySelector("main")`),"document "+path);await sleep(250)}
 async function metrics(){return evaluate(`({width:innerWidth,scroll:document.documentElement.scrollWidth,main:document.querySelectorAll("main").length,headings:document.querySelectorAll("h1").length,labels:[...document.querySelectorAll('input:not([type="hidden"])')].filter(e=>!e.labels?.length&&!e.getAttribute("aria-label")&&!e.getAttribute("aria-labelledby")).length,cls:window.__gapCls||0,lcp:window.__gapLcp||0})`)}
