@@ -45,9 +45,13 @@ try:
  ok((root/"phase1-rls-candidate.sql").read_text())
  print("PASS candidate policy installation",flush=True)
  ok((root/"sf01-independent-review.sql").read_text())
+ # Disposable Supabase compatibility fixture: mimic managed service-role grants observed in staging.
+ # This is not a grant on any real database.
+ ok("grant usage on schema public to service_role;grant select,insert,update,delete on public.gaps to service_role;grant select on public.projects,public.organization_members to service_role;")
+ ok((root/"sf01-service-gap-guard.sql").read_text())
  review=ok((root/"sf01-review-acceptance.sql").read_text())
- assert "PASS: 9 assertions" in review and review.strip().splitlines()[-1].endswith("|0|0|0"),review
- print("PASS SF01 independent reviewer and attribution; two tenants; transaction rollback",flush=True)
+ assert "PASS: 14 assertions" in review and review.strip().splitlines()[-1].endswith("|0|0|0"),review
+ print("PASS SF01 independent reviewer, attribution and service-role proposal restrictions; two tenants; transaction rollback",flush=True)
  ok(f"""insert into auth.users(id,email) values('{U}','a@example.invalid'),('{V}','b@example.invalid'),('{O}','owner@example.invalid');
  set request.jwt.claims='{{"sub":"{O}","aal":"aal2","role":"authenticated"}}';
  insert into public.organizations(id,name,created_by) values('{A}','Synthetic A','{O}');
