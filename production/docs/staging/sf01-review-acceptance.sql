@@ -44,5 +44,28 @@ do $t$ begin
  if (select count(*) from public.gap_history where gap_id='74000000-0000-4000-8000-000000000001')<>2 then raise exception 'TEST FAILED: atomic history';end if;
 end $t$;
 reset role;
+set local role service_role;
+set local request.jwt.claims='{"role":"service_role"}';
+do $t$ begin
+ begin
+  insert into public.gaps(organization_id,project_id,what_is,what_ought_to_be,why,gap,impact,action,status,created_by,source_kind) values('72000000-0000-4000-8000-000000000001','73000000-0000-4000-8000-000000000001','650','800','test','150','hold','correct','Confirmed','71000000-0000-4000-8000-000000000001','ai');
+  raise exception 'TEST FAILED: service inserted confirmed';
+ exception when raise_exception then if sqlerrm not like 'SF01-SERVICE: only attributed%' then raise;end if;end;
+ begin
+  update public.gaps set what_is='tampered' where id='74000000-0000-4000-8000-000000000001';
+  raise exception 'TEST FAILED: service changed finding';
+ exception when raise_exception then if sqlerrm not like 'SF01-SERVICE: existing findings%' then raise;end if;end;
+ begin
+  delete from public.gaps where id='74000000-0000-4000-8000-000000000001';
+  raise exception 'TEST FAILED: service deleted finding';
+ exception when raise_exception then if sqlerrm not like 'SF01-SERVICE: existing findings%' then raise;end if;end;
+ begin
+  insert into public.gaps(organization_id,project_id,what_is,what_ought_to_be,why,gap,impact,action,status,created_by,source_kind) values('72000000-0000-4000-8000-000000000001','73000000-0000-4000-8000-000000000001','650','800','test','150','hold','correct','Under Review','71000000-0000-4000-8000-000000000003','ai');
+  raise exception 'TEST FAILED: service cross tenant attribution';
+ exception when raise_exception then if sqlerrm not like 'SF01-SERVICE: candidate actor%' then raise;end if;end;
+ insert into public.gaps(id,organization_id,project_id,what_is,what_ought_to_be,why,gap,impact,action,status,created_by,source_kind) values('74000000-0000-4000-8000-000000000002','72000000-0000-4000-8000-000000000001','73000000-0000-4000-8000-000000000001','650','800','test','150','hold','correct','Under Review','71000000-0000-4000-8000-000000000001','ai');
+ if not exists(select 1 from public.gaps where id='74000000-0000-4000-8000-000000000002' and status='Under Review') then raise exception 'TEST FAILED: service candidate not persisted';end if;
+end $t$;
+reset role;
 rollback;
-select 'PASS: 9 assertions; transaction rolled back; simulated JWT claims, not live login' result,(select count(*) from auth.users) remaining_auth_users,(select count(*) from public.gaps) remaining_gaps,(select count(*) from public.organizations) remaining_organizations;
+select 'PASS: 14 assertions; transaction rolled back; simulated JWT claims, not live login' result,(select count(*) from auth.users) remaining_auth_users,(select count(*) from public.gaps) remaining_gaps,(select count(*) from public.organizations) remaining_organizations;
