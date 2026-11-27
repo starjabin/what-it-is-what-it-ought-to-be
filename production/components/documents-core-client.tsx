@@ -44,13 +44,13 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
    if(up.error)throw up.error;
    if(!revisionOf){
     const {error}=await s.from("documents").insert({id:docId,organization_id:orgId,project_id:projectId,contract_id:contractId,file_name:file.name,document_type:type,storage_path:path,content_hash:digest,version_no:versionNo,uploaded_by:userId,processing_status:"queued"});
-    if(error){await s.storage.from("contract-evidence").remove([path]);throw error}
+    if(error){throw Error("Source uploaded but document registration failed. Do not retry blindly. Request governed orphan review.")}
    }
    const {data:version,error:versionError}=await s.from("document_versions").insert({id:versionId,organization_id:orgId,document_id:docId,version_no:versionNo,file_name:file.name,storage_path:path,mime_type:file.type||null,byte_size:file.size,content_hash:digest,processing_status:"queued",is_current:true,created_by:userId}).select("*").single();
-   if(versionError){if(!revisionOf)await s.from("documents").delete().eq("id",docId);await s.storage.from("contract-evidence").remove([path]);throw versionError}
+   if(versionError){throw Error("Source uploaded but revision registration was not confirmed. Reconcile the document and stored source before retrying.")}
    const {data:doc}=await s.from("documents").select("id,project_id,contract_id,file_name,document_type,storage_path,content_hash,version_no,current_version_id,processing_status,created_at").eq("id",docId).single();
    if(doc)setDocs(x=>[doc as Doc,...x.filter(d=>d.id!==docId)]);
-   setVersions(x=>[version as Version,...x.filter(v=>!(v.document_id===docId&&v.id===versionId))]);setSelected(docId);form.reset();setMessage("Immutable revision uploaded. Run contract processing when the source is ready.");
+   setVersions(x=>[version as Version,...x.filter(v=>!(v.document_id===docId&&v.id===versionId))]);setSelected(docId);form.reset();setMessage("Revision registered. Verify and download its stored bytes before use. Live AI processing remains held.");
   }catch(error){setMessage(error instanceof Error?error.message:"Upload failed safely.")}
   finally{setBusy(false)}
  }
