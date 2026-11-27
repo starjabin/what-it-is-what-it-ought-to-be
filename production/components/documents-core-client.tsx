@@ -31,6 +31,11 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
    const digest=hex(await crypto.subtle.digest("SHA-256",await file.arrayBuffer()));
    const {data:dup}=await s.from("document_versions").select("id,document_id,file_name").eq("organization_id",orgId).eq("content_hash",digest).limit(1).maybeSingle();
    if(dup)throw new Error("Exact duplicate detected. This file already exists as "+dup.file_name+".");
+   if(revisionOf){
+    const {data:parent,error:parentError}=await s.from("documents").select("id,project_id,contract_id,document_type").eq("id",revisionOf).eq("organization_id",orgId).single();
+    if(parentError||!parent)throw Error("Revision parent unavailable or access denied.");
+    if(parent.project_id!==projectId||parent.contract_id!==contractId||parent.document_type!==type)throw Error("A revision must preserve its document project, contract and type. Create a separate document for a different scope.");
+   }
    const docId=revisionOf||crypto.randomUUID();
    const current=revisionOf?Math.max(0,...versions.filter(v=>v.document_id===revisionOf).map(v=>v.version_no)):0;
    const versionNo=current+1,versionId=crypto.randomUUID(),safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
@@ -43,10 +48,6 @@ export function DocumentsCoreClient({orgId,userId,documents:initial,versions:ini
    }
    const {data:version,error:versionError}=await s.from("document_versions").insert({id:versionId,organization_id:orgId,document_id:docId,version_no:versionNo,file_name:file.name,storage_path:path,mime_type:file.type||null,byte_size:file.size,content_hash:digest,processing_status:"queued",is_current:true,created_by:userId}).select("*").single();
    if(versionError){if(!revisionOf)await s.from("documents").delete().eq("id",docId);await s.storage.from("contract-evidence").remove([path]);throw versionError}
-   if(revisionOf){
-    const {error}=await s.from("documents").update({project_id:projectId,contract_id:contractId,document_type:type}).eq("id",docId);
-    if(error)throw error;
-   }
    const {data:doc}=await s.from("documents").select("id,project_id,contract_id,file_name,document_type,storage_path,content_hash,version_no,current_version_id,processing_status,created_at").eq("id",docId).single();
    if(doc)setDocs(x=>[doc as Doc,...x.filter(d=>d.id!==docId)]);
    setVersions(x=>[version as Version,...x.filter(v=>!(v.document_id===docId&&v.id===versionId))]);setSelected(docId);form.reset();setMessage("Immutable revision uploaded. Run contract processing when the source is ready.");
