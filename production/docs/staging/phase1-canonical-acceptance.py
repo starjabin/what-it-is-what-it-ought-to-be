@@ -49,6 +49,10 @@ try:
  # This is not a grant on any real database.
  ok("grant usage on schema public to service_role;grant select,insert,update,delete on public.gaps to service_role;grant select on public.projects,public.organization_members to service_role;")
  ok((root/"sf01-service-gap-guard.sql").read_text())
+ ok((root/"sf01-evidence-retention-guard.sql").read_text())
+ evidence=ok((root/"sf01-evidence-retention-acceptance.sql").read_text())
+ assert "PASS: 10 metadata assertions" in evidence and evidence.strip().splitlines()[-1].endswith("|0|0|0"),evidence
+ print("PASS SF01 evidence scope, registration and retention metadata; no object bytes",flush=True)
  review=ok((root/"sf01-review-acceptance.sql").read_text())
  assert "PASS: 14 assertions" in review and review.strip().splitlines()[-1].endswith("|0|0|0"),review
  print("PASS SF01 independent reviewer, attribution and service-role proposal restrictions; two tenants; transaction rollback",flush=True)
