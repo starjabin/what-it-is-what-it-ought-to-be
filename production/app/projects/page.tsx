@@ -1,6 +1,7 @@
 import {LocalizedHeading} from "@/components/localized-heading";
 import {AppShell} from "@/components/app-shell";
 import {ProjectsClient} from "@/components/projects-client";
+import {ProjectPlanningSandbox} from "@/components/project-planning-sandbox";
 import {getWorkspaceContext} from "@/lib/workspace";
 
 export default async function ProjectsPage(){
@@ -10,5 +11,6 @@ export default async function ProjectsPage(){
   return <AppShell localized organizationName={w.organization?.name||"Workspace"}>
     <LocalizedHeading eyebrow="Portfolio" title="Projects" description="Project context is the boundary for contracts, evidence, obligations, gaps and actions."/>
     <ProjectsClient orgId={w.orgId} userId={w.userId} projects={projects||[]} defaultMarket={w.organization?.market||"Global / International"}/>
+    <ProjectPlanningSandbox/>
   </AppShell>
 }
